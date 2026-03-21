@@ -9,6 +9,8 @@ class GameState {
 	#currentLootIndex = 0;
 	#currentRockLootTable = [];
 	#currentRockLootIndex = 0;
+	#currentSnakeLootTable = [];
+	#currentSnakeLootIndex = 0;
 	#currentTileTable = [];
 	#currentLevel = startingLevel;
 	#currentHealth = maxHealth;
@@ -31,6 +33,8 @@ class GameState {
 	get currentLootIndex() { return this.#currentLootIndex; }
 	get currentRockLootTable() { return this.#currentRockLootTable; }
 	get currentRockLootIndex() { return this.#currentRockLootIndex; }
+	get currentSnakeLootTable() { return this.#currentSnakeLootTable; }
+	get currentSnakeLootIndex() { return this.#currentSnakeLootIndex; }
 	get currentTileTable() { return this.#currentTileTable; }
 	get currentLevel()     { return this.#currentLevel; }
 	get currentHealth()    { return this.#currentHealth; }
@@ -108,6 +112,9 @@ class GameState {
 	setRockLootTable(table)    { this.#currentRockLootTable = table; this.#currentRockLootIndex = 0; }
 	drawRockLoot()             { return this.#currentRockLootTable[this.#currentRockLootIndex++]; }
 	restoreRockLoot(table, index) { this.#currentRockLootTable = table; this.#currentRockLootIndex = index; }
+	setSnakeLootTable(table)   { this.#currentSnakeLootTable = table; this.#currentSnakeLootIndex = 0; }
+	drawSnakeLoot()            { return this.#currentSnakeLootTable[this.#currentSnakeLootIndex++]; }
+	restoreSnakeLoot(table, index) { this.#currentSnakeLootTable = table; this.#currentSnakeLootIndex = index; }
 
 	// ── Tile Table ───────────────────────────────────────────────────
 	setTileTable(table)    { this.#currentTileTable = table; }
