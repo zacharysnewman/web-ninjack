@@ -156,7 +156,7 @@ function saveGame() {
 		timerSeconds: timer.value(),
 		gridState
 	};
-	localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(saveData)));
+	localStorage.setItem(SAVE_KEY, btoa(encodeURIComponent(JSON.stringify(saveData))));
 }
 
 function clearSave() {
@@ -186,7 +186,7 @@ function loadGame() {
 	const encoded = localStorage.getItem(SAVE_KEY);
 	if (!encoded) return false;
 	try {
-		const d = JSON.parse(atob(encoded));
+		const d = JSON.parse(decodeURIComponent(atob(encoded)));
 		playerX = d.playerX; playerY = d.playerY;
 		currentHealth = d.currentHealth; currentLevel = d.currentLevel;
 		gold = d.gold; swords = d.swords;
