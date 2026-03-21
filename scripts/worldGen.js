@@ -25,19 +25,14 @@ function generateLootTable(chuteCount, doorCount, keyCount) {
 	const keyDrop = Array(keyCount).fill(KEY);
 
 	return [...fisherYatesShuffle([
-		...snakeDrops,
-		...swordDrops,
-		...goldBagDrops,
-		...gemDrops,
-		...emptyDrops,
-		...doorDrop,
-		...keyDrop
+		...snakeDrops, ...swordDrops, ...goldBagDrops, ...gemDrops,
+		...emptyDrops, ...doorDrop, ...keyDrop
 	]), ...chuteDrop];
 }
 
 function generateWorld() {
-	state.rocks = [];
-	state.grid = Array.from({ length: worldSize }, () => Array(worldSize).fill(''));
+	state.clearRocks();
+	state.resetGrid();
 
 	const world = document.getElementById('world');
 	world.innerHTML = '';
@@ -53,11 +48,8 @@ function generateWorld() {
 				? NINJA
 				: state.currentTileTable[tileIndex++];
 
-			state.grid[y][x] = value;
-			tile.textContent = value;
-			if (value) tile.classList.add(value);
-
-			if (value === ROCK) state.rocks.push({ x, y });
+			setGridTile(x, y, value);
+			if (value === ROCK) state.addRock({ x, y });
 		}
 	}
 }

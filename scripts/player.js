@@ -6,13 +6,13 @@ function checkForMissingKey() {
 	if (hasKey) return;
 
 	if (state.doorLocked && state.currentKeys < 1) {
-		state.currentKeys = 1;
+		state.giveKey();
 		updateGoldDisplay();
 	}
 }
 
 function collectGold(x, y, amount) {
-	state.gold += amount;
+	state.addGold(amount);
 	updateGoldDisplay();
 	const symbol = amount >= 10 ? GEM : amount >= 5 ? GOLD : COIN;
 	notify(symbol, getTileElement(x, y));
@@ -42,7 +42,7 @@ function interactWithSnake(newX, newY) {
 	if (state.swords > 0) {
 		const loot = getRandomInRange(1, 100) > 80 ? HEART : GOLD;
 		setGridTile(newX, newY, loot);
-		state.swords--;
+		state.useSword();
 		updateGoldDisplay();
 		notify(SWORD, playerEl);
 		notify(SKULL, snakeEl);
@@ -56,9 +56,9 @@ function interactWithSnake(newX, newY) {
 function interactWithDoor(newX, newY) {
 	if (state.doorLocked) {
 		if (state.currentKeys > 0) {
-			state.currentKeys = 0;
+			state.useKey();
 			updateGoldDisplay();
-			state.doorLocked = false;
+			state.unlockDoor();
 			notify(UNLOCK, getTileElement(newX, newY));
 		} else {
 			notify(LOCK, getTileElement(newX, newY));
@@ -69,8 +69,7 @@ function interactWithDoor(newX, newY) {
 
 	notify(DOOR, getTileElement(newX, newY));
 	setGridTile(state.playerX, state.playerY, '');
-	state.playerX = newX;
-	state.playerY = newY;
+	state.setPlayer(newX, newY);
 	setGridTile(newX, newY, NINJA);
 	endGame();
 	return true;
@@ -90,7 +89,7 @@ function interactWithHole(newX, newY) {
 
 function interactWithVegetation(newX, newY) {
 	const isRock = getGridTile(newX, newY) === ROCK;
-	const revealedTile = isRock ? SNAKE : state.currentLootTable[state.currentLootIndex++];
+	const revealedTile = isRock ? SNAKE : state.drawLoot();
 	if (revealedTile === SNAKE) addSnake(newX, newY);
 	setGridTile(newX, newY, revealedTile);
 	notify(isRock ? ROCK : TREE, getTileElement(newX, newY));
@@ -103,11 +102,11 @@ function interactWithOpenTile(newX, newY) {
 	if (tileValue === GOLD)       { collectGold(newX, newY, 5); }
 	else if (tileValue === COIN)  { collectGold(newX, newY, 1); }
 	else if (tileValue === GEM)   { collectGold(newX, newY, 10); }
-	else if (tileValue === SWORD) { collectItem(newX, newY, SWORD, () => state.swords++); }
-	else if (tileValue === HEART) { collectItem(newX, newY, HEART, () => state.currentHealth++); }
-	else if (tileValue === KEY)   { collectItem(newX, newY, KEY,   () => { state.currentKeys = 1; }); }
+	else if (tileValue === SWORD) { collectItem(newX, newY, SWORD, () => state.addSword()); }
+	else if (tileValue === HEART) { collectItem(newX, newY, HEART, () => state.heal()); }
+	else if (tileValue === KEY)   { collectItem(newX, newY, KEY,   () => state.giveKey()); }
 	else if (tileValue === CHUTE) {
-		collectItem(newX, newY, CHUTE, () => { state.currentChutes = 1; });
+		collectItem(newX, newY, CHUTE, () => state.giveChute());
 		handleFinalBoss();
 	} else if (tileValue === SNAKE) {
 		return interactWithSnake(newX, newY);
@@ -118,14 +117,13 @@ function interactWithOpenTile(newX, newY) {
 
 function movePlayerTo(newX, newY) {
 	setGridTile(state.playerX, state.playerY, '');
-	state.playerX = newX;
-	state.playerY = newY;
+	state.setPlayer(newX, newY);
 	setGridTile(newX, newY, NINJA);
 }
 
 function move(direction) {
 	checkForMissingKey();
-	state.currentMoves += 1;
+	state.incrementMoves();
 	updateGoldDisplay();
 
 	const { newX, newY } = getNewTileInDirection(direction, state.playerX, state.playerY);

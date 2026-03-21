@@ -1,6 +1,5 @@
 function canSnakeMoveToTile(x, y) {
-	const tileValue = getGridTile(x, y);
-	return ![TREE, ROCK, SNAKE, DOOR, KEY, CHUTE].includes(tileValue);
+	return ![TREE, ROCK, SNAKE, DOOR, KEY, CHUTE].includes(getGridTile(x, y));
 }
 
 function snakeMove(snake, newX, newY) {
@@ -26,7 +25,7 @@ function snakeMove(snake, newX, newY) {
 		const notifyEl = isHole
 			? getTileElement(newX, newY)
 			: getTileElement(snake.x, snake.y);
-		killSnake(snake.x, snake.y);
+		state.removeSnake(snake.x, snake.y);
 		notify(SKULL, notifyEl);
 	} else {
 		setGridTile(newX, newY, SNAKE);
@@ -36,11 +35,11 @@ function snakeMove(snake, newX, newY) {
 }
 
 function killSnake(x, y) {
-	state.snakes = state.snakes.filter(s => !(s.x === x && s.y === y));
+	state.removeSnake(x, y);
 }
 
 function addSnake(x, y) {
-	state.snakes.push({ x, y, justSpawned: true });
+	state.addSnake({ x, y, justSpawned: true });
 }
 
 function moveSnakes() {

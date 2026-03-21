@@ -3,7 +3,7 @@ function endGame() {
 }
 
 function handleDamage(damage, x, y) {
-	state.currentHealth -= damage;
+	state.takeDamage(damage);
 	updateGoldDisplay();
 
 	if (state.currentHealth <= 0) {
@@ -45,35 +45,33 @@ function handleWin() {
 }
 
 function setupLevel(chuteCount, doorCount, keyCount) {
-	state.snakes = [];
-	state.currentKeys = 0;
-	state.doorLocked = true;
-	state.currentLootIndex = 0;
-	state.currentLootTable = generateLootTable(chuteCount, doorCount, keyCount);
-	state.currentTileTable = fisherYatesShuffle(generateTileTable());
+	state.clearSnakes();
+	state.resetKeys();
+	state.lockDoor();
+	state.setLootTable(generateLootTable(chuteCount, doorCount, keyCount));
+	state.setTileTable(fisherYatesShuffle(generateTileTable()));
 	generateWorld();
-	state.currentLevel += 1;
+	state.incrementLevel();
 	updateGoldDisplay();
 }
 
 function startNewGame() {
 	clearSave();
-	state.playerX = Math.floor(worldSize / 2);
-	state.playerY = Math.floor(worldSize / 2);
-	state.gold = 0;
-	state.swords = 0;
-	state.currentHealth = maxHealth;
-	state.currentLevel = startingLevel;
-	state.currentChutes = 0;
-	state.currentMoves = 0;
-	state.snakesCount = startingSnakesCount;
+	state.setPlayer(Math.floor(worldSize / 2), Math.floor(worldSize / 2));
+	state.resetGold();
+	state.resetSwords();
+	state.resetHealth();
+	state.resetLevel();
+	state.resetChutes();
+	state.resetMoves();
+	state.resetSnakesCount();
 	timer.reset();
 	timer.start();
 	setupLevel(0, 1, 1);
 }
 
 function advanceLevel() {
-	state.snakesCount += 1;
+	state.incrementSnakesCount();
 	const isFinalLevel = state.currentLevel === 9;
 	const chuteCount = isFinalLevel ? 1 : 0;
 	const doorCount = isFinalLevel ? 0 : 1;

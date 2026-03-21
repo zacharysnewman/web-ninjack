@@ -31,8 +31,8 @@ function clearSave() {
 }
 
 function restoreWorld(gridState) {
-	state.rocks = [];
-	state.grid = Array.from({ length: worldSize }, () => Array(worldSize).fill(''));
+	state.clearRocks();
+	state.resetGrid();
 
 	const world = document.getElementById('world');
 	world.innerHTML = '';
@@ -44,11 +44,8 @@ function restoreWorld(gridState) {
 			world.appendChild(tile);
 
 			const value = gridState[y][x];
-			state.grid[y][x] = value;
-			tile.textContent = value;
-			if (value) tile.classList.add(value);
-
-			if (value === ROCK) state.rocks.push({ x, y });
+			setGridTile(x, y, value);
+			if (value === ROCK) state.addRock({ x, y });
 		}
 	}
 }
@@ -64,15 +61,18 @@ async function loadGame() {
 			return false;
 		}
 		const d = JSON.parse(json);
-		state.playerX = d.playerX; state.playerY = d.playerY;
-		state.currentHealth = d.currentHealth; state.currentLevel = d.currentLevel;
-		state.gold = d.gold; state.swords = d.swords;
-		state.currentKeys = d.currentKeys; state.currentChutes = d.currentChutes;
-		state.currentMoves = d.currentMoves; state.snakesCount = d.snakesCount;
-		state.doorLocked = d.doorLocked;
-		state.currentLootTable = d.currentLootTable; state.currentLootIndex = d.currentLootIndex;
-		state.currentTileTable = d.currentTileTable;
-		state.snakes = d.snakes.map(s => ({ ...s, justSpawned: false }));
+		state.setPlayer(d.playerX, d.playerY);
+		state.setHealth(d.currentHealth);
+		state.setLevel(d.currentLevel);
+		state.setGold(d.gold);
+		state.setSwords(d.swords);
+		state.setKeys(d.currentKeys);
+		state.setChutes(d.currentChutes);
+		state.setMoves(d.currentMoves);
+		state.setSnakesCount(d.snakesCount);
+		state.setDoorLocked(d.doorLocked);
+		state.restoreLoot(d.currentLootTable, d.currentLootIndex);
+		state.setSnakes(d.snakes.map(s => ({ ...s, justSpawned: false })));
 		timer.reset();
 		timer.seconds = d.timerSeconds + 1;
 		timer.start();
