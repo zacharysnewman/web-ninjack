@@ -8,8 +8,8 @@ Move by tapping/clicking the directional buttons or using arrow keys. Bumping in
 
 | Tile | |
 |------|---|
-| 🌲 Tree* | Drops: 🗡 💰 💎 🐍 🔑 🚪 |
-| 🪨 Rock* | Drops: 🐍 ❤️ |
+| 🌲 Tree | Drops: 🗡 💰 💎 🐍 🔑 🚪 |
+| 🪨 Rock | Drops: 🐍 ❤️ |
 | 🐍 Snake | Costs: 🗡️, Drops: 💰 ❤️ |
 | 🗡 Sword | Auto-used when attacking 🐍 |
 | 🚪 Door | Needs 🔑 to unlock, walk through to advance |
