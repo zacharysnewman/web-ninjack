@@ -10,7 +10,7 @@ After modifying any asset, increment its version query parameter in `index.html`
 | `styles/styles.css` | `<link rel="stylesheet" href="styles/styles.css?v=N">` |
 
 **Current versions:**
-- `app.js`: v8
+- `app.js`: v9
 - `styles.css`: v2
 
 Bump the version every time you make changes to the file, even minor ones.
