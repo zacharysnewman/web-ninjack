@@ -2,50 +2,46 @@ function endGame() {
 	advanceLevel();
 }
 
-function handleDamage(damage, currentTile) {
+function handleDamage(damage, x, y) {
 	state.currentHealth -= damage;
 	updateGoldDisplay();
 
-	if(state.currentHealth <= 0) {
-		handleDeath(currentTile);
+	if (state.currentHealth <= 0) {
+		handleDeath(x, y);
 	} else {
-		notify(DAMAGE, currentTile);
+		notify(DAMAGE, getTileElement(x, y));
 	}
 }
 
-function handleDeath(currentTile) {
+function handleDeath(x, y) {
 	clearSave();
 	timer.stop();
-	setTile(currentTile, '');
-	removeClass(currentTile, NINJA);
+	setGridTile(x, y, '');
 
-	const delay = 1000;
 	disableButtons();
 	setTimeout(async () => {
 		await showModal(alertMessages.death());
 		startNewGame();
 		enableButtons();
-	}, delay);
+	}, 1000);
 }
 
 function handleFinalBoss() {
 	state.rocks.forEach(rock => {
-		removeClass(rock.tile, ROCK);
-		notify(ROCK, rock.tile);
-		setTile(rock.tile, SNAKE);
+		notify(ROCK, getTileElement(rock.x, rock.y));
+		setGridTile(rock.x, rock.y, SNAKE);
 		addSnake(rock.x, rock.y);
 	});
 }
 
 function handleWin() {
 	timer.stop();
-	const delay = 1000;
 	disableButtons();
 	setTimeout(async () => {
 		await showModal(alertMessages.win());
 		startNewGame();
 		enableButtons();
-	}, delay);
+	}, 1000);
 }
 
 function setupLevel(chuteCount, doorCount, keyCount) {

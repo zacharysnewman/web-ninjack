@@ -1,142 +1,126 @@
 function checkForMissingKey() {
-	const allTrees = document.querySelectorAll('.' + TREE);
-	if(allTrees.length > 0) {
-		return;
-	}
+	const hasTree = state.grid.some(row => row.includes(TREE));
+	if (hasTree) return;
 
-	const allKeys = document.querySelectorAll('.' + KEY);
-	const key = allKeys[0];
+	const hasKey = state.grid.some(row => row.includes(KEY));
+	if (hasKey) return;
 
-	if(key && key.textContent !== KEY) {
-		key.textContent = KEY;
-		return;
-	}
-
-	if(state.doorLocked && state.currentKeys < 1 && !key) {
+	if (state.doorLocked && state.currentKeys < 1) {
 		state.currentKeys = 1;
 		updateGoldDisplay();
 	}
 }
 
-function collectGold(tile, amount) {
+function collectGold(x, y, amount) {
 	state.gold += amount;
 	updateGoldDisplay();
-	setTile(tile, '');
-	notify(amount >= 10 ? GEM : amount >= 5 ? GOLD : COIN, tile);
+	const symbol = amount >= 10 ? GEM : amount >= 5 ? GOLD : COIN;
+	notify(symbol, getTileElement(x, y));
+	setGridTile(x, y, '');
 }
 
-function collectItem(tile, symbol, stateFn) {
+function collectItem(x, y, symbol, stateFn) {
 	stateFn();
 	updateGoldDisplay();
-	setTile(tile, '');
-	notify(symbol, tile);
+	notify(symbol, getTileElement(x, y));
+	setGridTile(x, y, '');
 }
 
-function interactWithSnake(currentTile, newTile, newX, newY) {
+function interactWithSnake(newX, newY) {
+	const playerEl = getTileElement(state.playerX, state.playerY);
+	const snakeEl = getTileElement(newX, newY);
 	const canFight = state.swords > 0 || state.currentHealth > 1;
-	if(canFight) {
-		setTile(newTile, '');
-		removeClass(newTile, SNAKE);
+
+	if (canFight) {
+		setGridTile(newX, newY, '');
+		notify(SKULL, snakeEl);
 		killSnake(newX, newY);
 	} else {
-		notify(SKULL, currentTile);
+		notify(SKULL, playerEl);
 	}
 
-	if(state.swords > 0) {
-		const isHeart = getRandomInRange(1, 100) > 80;
-		setTile(newTile, isHeart ? HEART : GOLD);
+	if (state.swords > 0) {
+		const loot = getRandomInRange(1, 100) > 80 ? HEART : GOLD;
+		setGridTile(newX, newY, loot);
 		state.swords--;
 		updateGoldDisplay();
-		notify(SWORD, currentTile);
-		notify(SKULL, newTile);
+		notify(SWORD, playerEl);
+		notify(SKULL, snakeEl);
 		return true;
 	}
 
-	handleDamage(1, currentTile);
+	handleDamage(1, state.playerX, state.playerY);
 	return true;
 }
 
-function interactWithDoor(currentTile, newTile, newX, newY) {
-	if(state.doorLocked) {
-		if(state.currentKeys > 0) {
+function interactWithDoor(newX, newY) {
+	if (state.doorLocked) {
+		if (state.currentKeys > 0) {
 			state.currentKeys = 0;
 			updateGoldDisplay();
 			state.doorLocked = false;
-			notify(UNLOCK, newTile);
+			notify(UNLOCK, getTileElement(newX, newY));
 		} else {
-			notify(LOCK, newTile);
+			notify(LOCK, getTileElement(newX, newY));
 		}
 		saveGame();
 		return true;
 	}
 
-	currentTile.textContent = '';
-	removeClass(currentTile, NINJA);
+	notify(DOOR, getTileElement(newX, newY));
+	setGridTile(state.playerX, state.playerY, '');
 	state.playerX = newX;
 	state.playerY = newY;
-	newTile.textContent = NINJA;
-	newTile.classList.add(NINJA);
-	notify(DOOR, newTile);
+	setGridTile(newX, newY, NINJA);
 	endGame();
 	return true;
 }
 
-function interactWithHole(currentTile, newTile) {
-	if(state.currentChutes > 0) {
-		setTile(currentTile, '');
-		removeClass(currentTile, NINJA);
-		notify(CHUTE, newTile);
+function interactWithHole(newX, newY) {
+	if (state.currentChutes > 0) {
+		setGridTile(state.playerX, state.playerY, '');
+		notify(CHUTE, getTileElement(newX, newY));
 		handleWin();
 	} else {
-		notify(SKULL, newTile);
-		handleDamage(state.currentHealth, currentTile);
+		notify(SKULL, getTileElement(newX, newY));
+		handleDamage(state.currentHealth, state.playerX, state.playerY);
 	}
 	return true;
 }
 
-function interactWithVegetation(newTile, newX, newY) {
-	const isRock = hasClass(newTile, ROCK);
-	removeClass(newTile, TREE);
-	removeClass(newTile, ROCK);
-
+function interactWithVegetation(newX, newY) {
+	const isRock = getGridTile(newX, newY) === ROCK;
 	const revealedTile = isRock ? SNAKE : state.currentLootTable[state.currentLootIndex++];
-	if(revealedTile === SNAKE) {
-		addSnake(newX, newY);
-	}
-	setTile(newTile, revealedTile);
-	notify(isRock ? ROCK : TREE, newTile);
+	if (revealedTile === SNAKE) addSnake(newX, newY);
+	setGridTile(newX, newY, revealedTile);
+	notify(isRock ? ROCK : TREE, getTileElement(newX, newY));
 	return false;
 }
 
-function interactWithOpenTile(currentTile, newTile, newX, newY) {
-	if (hasClass(newTile, GOLD)) {
-		collectGold(newTile, 5);
-	} else if (hasClass(newTile, COIN)) {
-		collectGold(newTile, 1);
-	} else if (hasClass(newTile, GEM)) {
-		collectGold(newTile, 10);
-	} else if (hasClass(newTile, SWORD)) {
-		collectItem(newTile, SWORD, () => state.swords++);
-	} else if (hasClass(newTile, HEART)) {
-		collectItem(newTile, HEART, () => state.currentHealth++);
-	} else if (hasClass(newTile, KEY)) {
-		collectItem(newTile, KEY, () => state.currentKeys = 1);
-	} else if (hasClass(newTile, CHUTE)) {
-		collectItem(newTile, CHUTE, () => state.currentChutes = 1);
+function interactWithOpenTile(newX, newY) {
+	const tileValue = getGridTile(newX, newY);
+
+	if (tileValue === GOLD)       { collectGold(newX, newY, 5); }
+	else if (tileValue === COIN)  { collectGold(newX, newY, 1); }
+	else if (tileValue === GEM)   { collectGold(newX, newY, 10); }
+	else if (tileValue === SWORD) { collectItem(newX, newY, SWORD, () => state.swords++); }
+	else if (tileValue === HEART) { collectItem(newX, newY, HEART, () => state.currentHealth++); }
+	else if (tileValue === KEY)   { collectItem(newX, newY, KEY,   () => { state.currentKeys = 1; }); }
+	else if (tileValue === CHUTE) {
+		collectItem(newX, newY, CHUTE, () => { state.currentChutes = 1; });
 		handleFinalBoss();
-	} else if (hasClass(newTile, SNAKE)) {
-		return interactWithSnake(currentTile, newTile, newX, newY);
+	} else if (tileValue === SNAKE) {
+		return interactWithSnake(newX, newY);
 	}
+
 	return false;
 }
 
-function movePlayerTo(currentTile, newTile, newX, newY) {
-	currentTile.textContent = '';
-	removeClass(currentTile, NINJA);
+function movePlayerTo(newX, newY) {
+	setGridTile(state.playerX, state.playerY, '');
 	state.playerX = newX;
 	state.playerY = newY;
-	newTile.textContent = NINJA;
-	newTile.classList.add(NINJA);
+	setGridTile(newX, newY, NINJA);
 }
 
 function move(direction) {
@@ -144,30 +128,30 @@ function move(direction) {
 	state.currentMoves += 1;
 	updateGoldDisplay();
 
-	const currentTile = document.querySelector(`.tile.${NINJA}`);
-	const { newTile, newX, newY } = getNewTileInDirection(direction, state.playerX, state.playerY);
+	const { newX, newY } = getNewTileInDirection(direction, state.playerX, state.playerY);
+	const tileValue = getGridTile(newX, newY);
 
-	if (hasClass(newTile, HOLE)) {
-		interactWithHole(currentTile, newTile);
+	if (tileValue === HOLE) {
+		interactWithHole(newX, newY);
 		return;
 	}
 
-	if (hasClass(newTile, TREE) || hasClass(newTile, ROCK)) {
-		interactWithVegetation(newTile, newX, newY);
+	if (tileValue === TREE || tileValue === ROCK) {
+		interactWithVegetation(newX, newY);
 		moveSnakes();
 		saveGame();
 		return;
 	}
 
-	if (hasClass(newTile, DOOR)) {
-		interactWithDoor(currentTile, newTile, newX, newY);
+	if (tileValue === DOOR) {
+		interactWithDoor(newX, newY);
 		return;
 	}
 
-	const didEarlyReturn = interactWithOpenTile(currentTile, newTile, newX, newY);
+	const didEarlyReturn = interactWithOpenTile(newX, newY);
 	if (didEarlyReturn) return;
 
-	movePlayerTo(currentTile, newTile, newX, newY);
+	movePlayerTo(newX, newY);
 	moveSnakes();
 	saveGame();
 }

@@ -1,22 +1,17 @@
-function hasClass(tile, className) {
-	return tile.classList.contains(className);
+function getTileElement(x, y) {
+	return document.querySelector('.p' + x + '-' + y);
 }
 
-function removeClass(tile, className) {
-	return tile.classList.remove(className);
+function getGridTile(x, y) {
+	return state.grid[y][x];
 }
 
-function removeClasses(tile, classNames) {
-	for(const className of classNames) {
-		removeClass(tile, className);
-	}
-}
-
-function setTile(tile, className) {
-	if(className !== '') {
-		tile.classList.add(className);
-	}
-	tile.textContent = className;
+function setGridTile(x, y, value) {
+	state.grid[y][x] = value;
+	const tile = getTileElement(x, y);
+	tile.className = 'tile p' + x + '-' + y;
+	tile.textContent = value;
+	if (value) tile.classList.add(value);
 }
 
 function getNewTileInDirection(direction, startX, startY) {
@@ -24,29 +19,18 @@ function getNewTileInDirection(direction, startX, startY) {
 	let newY = startY;
 
 	switch (direction) {
-		case 'up':
-			newY = Math.max(0, startY - 1);
-		break;
-		case 'down':
-			newY = Math.min(worldSize - 1, startY + 1);
-		break;
-		case 'left':
-			newX = Math.max(0, startX - 1);
-		break;
-		case 'right':
-			newX = Math.min(worldSize - 1, startX + 1);
-		break;
+		case 'up':    newY = Math.max(0, startY - 1);            break;
+		case 'down':  newY = Math.min(worldSize - 1, startY + 1); break;
+		case 'left':  newX = Math.max(0, startX - 1);            break;
+		case 'right': newX = Math.min(worldSize - 1, startX + 1); break;
 	}
 
-	const newTile = document.querySelector(`.tile:nth-child(${newY * worldSize + newX + 1})`);
-
-	return { newTile, newX, newY };
+	return { newX, newY };
 }
 
 function getRandomDirection() {
 	const directions = ['up', 'down', 'left', 'right'];
-	const randomIndex = Math.floor(Math.random() * directions.length);
-	return directions[randomIndex];
+	return directions[Math.floor(Math.random() * directions.length)];
 }
 
 function getRandomInRange(a, b) {

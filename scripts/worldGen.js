@@ -24,7 +24,7 @@ function generateLootTable(chuteCount, doorCount, keyCount) {
 	const doorDrop = Array(doorCount).fill(DOOR);
 	const keyDrop = Array(keyCount).fill(KEY);
 
-	const shuffledDrops = [...fisherYatesShuffle([
+	return [...fisherYatesShuffle([
 		...snakeDrops,
 		...swordDrops,
 		...goldBagDrops,
@@ -33,33 +33,31 @@ function generateLootTable(chuteCount, doorCount, keyCount) {
 		...doorDrop,
 		...keyDrop
 	]), ...chuteDrop];
-
-	return shuffledDrops;
 }
 
 function generateWorld() {
 	state.rocks = [];
+	state.grid = Array.from({ length: worldSize }, () => Array(worldSize).fill(''));
+
 	const world = document.getElementById('world');
 	world.innerHTML = '';
+
 	let tileIndex = 0;
 	for (let y = 0; y < worldSize; y++) {
 		for (let x = 0; x < worldSize; x++) {
 			const tile = document.createElement('div');
-			tile.className = 'tile';
-
-			if (x === state.playerX && y === state.playerY) {
-				tile.textContent = NINJA;
-				tile.classList.add(NINJA);
-				state.centerTile = tile;
-			} else {
-				const tileValue = state.currentTileTable[tileIndex++];
-				if(tileValue === ROCK) {
-					state.rocks.push({tile, x, y});
-				}
-				setTile(tile, tileValue);
-			}
-			tile.classList.add("p" + [x,y].toString().replace(",", "-"));
+			tile.className = 'tile p' + x + '-' + y;
 			world.appendChild(tile);
+
+			const value = (x === state.playerX && y === state.playerY)
+				? NINJA
+				: state.currentTileTable[tileIndex++];
+
+			state.grid[y][x] = value;
+			tile.textContent = value;
+			if (value) tile.classList.add(value);
+
+			if (value === ROCK) state.rocks.push({ x, y });
 		}
 	}
 }
