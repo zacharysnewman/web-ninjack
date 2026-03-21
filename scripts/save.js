@@ -16,6 +16,7 @@ async function saveGame() {
 		doorLocked: state.doorLocked,
 		currentLootTable: state.currentLootTable, currentLootIndex: state.currentLootIndex,
 		currentRockLootTable: state.currentRockLootTable, currentRockLootIndex: state.currentRockLootIndex,
+		currentSnakeLootTable: state.currentSnakeLootTable, currentSnakeLootIndex: state.currentSnakeLootIndex,
 		snakes: state.snakes.map(s => ({ x: s.x, y: s.y })),
 		timerSeconds: timer.value(),
 		gridState: state.grid.map(row => [...row]),
@@ -74,6 +75,7 @@ async function loadGame() {
 		state.setDoorLocked(d.doorLocked);
 		state.restoreLoot(d.currentLootTable, d.currentLootIndex);
 		state.restoreRockLoot(d.currentRockLootTable ?? [], d.currentRockLootIndex ?? 0);
+		state.restoreSnakeLoot(d.currentSnakeLootTable ?? [], d.currentSnakeLootIndex ?? 0);
 		state.setSnakes(d.snakes.map(s => ({ ...s, justSpawned: false })));
 		timer.reset();
 		timer.seconds = d.timerSeconds + 1;

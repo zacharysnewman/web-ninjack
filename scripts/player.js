@@ -40,7 +40,7 @@ function interactWithSnake(newX, newY) {
 	}
 
 	if (state.swords > 0) {
-		const loot = GOLD;
+		const loot = state.drawSnakeLoot();
 		setGridTile(newX, newY, loot);
 		state.useSword();
 		updateGoldDisplay();

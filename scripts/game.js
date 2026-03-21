@@ -50,6 +50,7 @@ function setupLevel(chuteCount, doorCount, keyCount) {
 	state.lockDoor();
 	state.setLootTable(generateLootTable(chuteCount, doorCount, keyCount));
 	state.setRockLootTable(generateRockLootTable());
+	state.setSnakeLootTable(generateSnakeLootTable());
 	state.setTileTable(fisherYatesShuffle(generateTileTable()));
 	generateWorld();
 	state.incrementLevel();
