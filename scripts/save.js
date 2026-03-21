@@ -15,7 +15,6 @@ async function saveGame() {
 		currentMoves: state.currentMoves, snakesCount: state.snakesCount,
 		doorLocked: state.doorLocked,
 		currentLootTable: state.currentLootTable, currentLootIndex: state.currentLootIndex,
-		currentTileTable: state.currentTileTable,
 		snakes: state.snakes.map(s => ({ x: s.x, y: s.y })),
 		timerSeconds: timer.value(),
 		gridState: state.grid.map(row => [...row]),
