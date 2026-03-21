@@ -1,0 +1,21 @@
+/* Mutable Game State */
+const state = {
+	playerX: 0,
+	playerY: 0,
+	centerTile: null,
+	gold: 0,
+	swords: 0,
+	currentLootTable: [],
+	currentLootIndex: 0,
+	currentTileTable: [],
+	currentLevel: startingLevel,
+	currentHealth: maxHealth,
+	currentKeys: 0,
+	currentChutes: 0,
+	currentMoves: 0,
+	snakesCount: startingSnakesCount,
+	snakes: [],
+	rocks: [],
+	doorLocked: true,
+	buttonsDisabled: false,
+};
