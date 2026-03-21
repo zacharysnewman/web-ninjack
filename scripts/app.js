@@ -216,10 +216,11 @@ async function loadGame() {
 		currentTileTable = d.currentTileTable;
 		snakes = d.snakes.map(s => ({ ...s, justSpawned: false }));
 		timer.reset();
-		timer.seconds = d.timerSeconds;
+		timer.seconds = d.timerSeconds + 1;
 		timer.start();
 		restoreWorld(d.gridState);
 		updateGoldDisplay();
+		await saveGame();
 		return true;
 	} catch (e) {
 		clearSave();
