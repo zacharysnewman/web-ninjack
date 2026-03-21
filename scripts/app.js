@@ -117,7 +117,10 @@ class Timer {
 }
 /* END Timer Class */
 const timer = new Timer();
-timer.setTimeUpdateCallback(updateGoldDisplay);
+timer.setTimeUpdateCallback(() => {
+	updateGoldDisplay();
+	saveGame();
+});
 
 // Function to show a modal and wait for user confirmation
 async function showModal(bodyText) {
