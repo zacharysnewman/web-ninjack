@@ -76,5 +76,7 @@ With `state.grid[][]` as the source of truth, save/load operates purely on the g
 ### State Object vs. Module Encapsulation
 The `state` object is a pragmatic solution but still mutable and shared globally. A future improvement is to encapsulate state inside modules and expose only getter/setter interfaces, reducing the surface area for accidental mutation.
 
-### Combat and Interaction System
+### Combat and Interaction System (Deferred)
 Snake combat and item pickup logic in `player.js` are still ad hoc conditionals. A tile interaction registry — where each tile type registers a handler — would make adding new tile types non-invasive to the core movement function.
+
+Deferred: the current handler functions are already well-named and readable. The registry pattern adds indirection without a concrete benefit until new tile types are actually needed. Revisit if the game is extended.
