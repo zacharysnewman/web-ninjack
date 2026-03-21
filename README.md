@@ -10,7 +10,7 @@ Move by tapping/clicking the directional buttons or using arrow keys. Bumping in
 |------|---|
 | 🌲 Tree* | Drops: 🗡 💰 💎 🐍 🔑 🚪 |
 | 🪨 Rock* | Drops: 🐍 ❤️ |
-| 🐍 Snake | Attacking costs 1 🗡 (or 1 ❤️ if no 🗡); being attacked costs 1 ❤️ |
+| 🐍 Snake | Costs: 🗡️, Drops: 💰 ❤️ |
 | 🗡 Sword | Auto-used when attacking 🐍 |
 | 🚪 Door | Needs 🔑 to unlock, walk through to advance |
 | 🕳️ Hole | 💀 |
