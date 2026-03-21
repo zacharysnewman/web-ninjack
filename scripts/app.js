@@ -628,6 +628,7 @@ function handleDamage(damage, currentTile) {
 }
 
 function handleDeath(currentTile) {
+	clearSave();
 	timer.stop();
 	setTile(currentTile, '');
 	removeClass(currentTile, NINJA);
