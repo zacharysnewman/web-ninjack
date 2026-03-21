@@ -6,10 +6,12 @@ function fisherYatesShuffle(arr) {
 	return arr;
 }
 
-const rockTiles = Array(rockCount).fill(ROCK);
-const treeTiles = Array(treeCount).fill(TREE);
-const holeTiles = Array(holeCount).fill(HOLE);
-const tileTable = fisherYatesShuffle([...rockTiles, ...treeTiles, ...holeTiles]);
+function generateTileTable() {
+	const rockTiles = Array(rockCount).fill(ROCK);
+	const treeTiles = Array(treeCount).fill(TREE);
+	const holeTiles = Array(holeCount).fill(HOLE);
+	return [...rockTiles, ...treeTiles, ...holeTiles];
+}
 
 function generateLootTable(chuteCount, doorCount, keyCount) {
 	const remainingCount = treeCount - state.snakesCount - swordsCount - goldBagsCount - gemCount - doorCount - keyCount - chuteCount;

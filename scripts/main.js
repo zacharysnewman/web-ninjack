@@ -37,10 +37,10 @@ async function main() {
 	});
 	document.addEventListener('keydown', onKeyDown);
 	if (!await loadGame()) {
-		resetGame();
+		startNewGame();
 		timer.stop();
 		await showModal(alertMessages.welcome);
-		resetGame();
+		startNewGame();
 	}
 }
 
