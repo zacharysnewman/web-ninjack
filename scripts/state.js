@@ -7,6 +7,8 @@ class GameState {
 	#swords = 0;
 	#currentLootTable = [];
 	#currentLootIndex = 0;
+	#currentRockLootTable = [];
+	#currentRockLootIndex = 0;
 	#currentTileTable = [];
 	#currentLevel = startingLevel;
 	#currentHealth = maxHealth;
@@ -27,6 +29,8 @@ class GameState {
 	get swords()           { return this.#swords; }
 	get currentLootTable() { return this.#currentLootTable; }
 	get currentLootIndex() { return this.#currentLootIndex; }
+	get currentRockLootTable() { return this.#currentRockLootTable; }
+	get currentRockLootIndex() { return this.#currentRockLootIndex; }
 	get currentTileTable() { return this.#currentTileTable; }
 	get currentLevel()     { return this.#currentLevel; }
 	get currentHealth()    { return this.#currentHealth; }
@@ -99,8 +103,11 @@ class GameState {
 	setButtonsDisabled(v)  { this.#buttonsDisabled = v; }
 
 	// ── Loot ─────────────────────────────────────────────────────────
-	setLootTable(table)    { this.#currentLootTable = table; this.#currentLootIndex = 0; }
-	drawLoot()             { return this.#currentLootTable[this.#currentLootIndex++]; }
+	setLootTable(table)        { this.#currentLootTable = table; this.#currentLootIndex = 0; }
+	drawLoot()                 { return this.#currentLootTable[this.#currentLootIndex++]; }
+	setRockLootTable(table)    { this.#currentRockLootTable = table; this.#currentRockLootIndex = 0; }
+	drawRockLoot()             { return this.#currentRockLootTable[this.#currentRockLootIndex++]; }
+	restoreRockLoot(table, index) { this.#currentRockLootTable = table; this.#currentRockLootIndex = index; }
 
 	// ── Tile Table ───────────────────────────────────────────────────
 	setTileTable(table)    { this.#currentTileTable = table; }

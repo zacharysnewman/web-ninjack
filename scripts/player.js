@@ -40,7 +40,7 @@ function interactWithSnake(newX, newY) {
 	}
 
 	if (state.swords > 0) {
-		const loot = getRandomInRange(1, 100) > 80 ? HEART : GOLD;
+		const loot = GOLD;
 		setGridTile(newX, newY, loot);
 		state.useSword();
 		updateGoldDisplay();
@@ -89,7 +89,7 @@ function interactWithHole(newX, newY) {
 
 function interactWithVegetation(newX, newY) {
 	const isRock = getGridTile(newX, newY) === ROCK;
-	const revealedTile = isRock ? SNAKE : state.drawLoot();
+	const revealedTile = isRock ? state.drawRockLoot() : state.drawLoot();
 	if (revealedTile === SNAKE) addSnake(newX, newY);
 	setGridTile(newX, newY, revealedTile);
 	notify(isRock ? ROCK : TREE, getTileElement(newX, newY));
