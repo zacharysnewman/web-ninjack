@@ -2,7 +2,7 @@
 const state = {
 	playerX: 0,
 	playerY: 0,
-	centerTile: null,
+	grid: [],
 	gold: 0,
 	swords: 0,
 	currentLootTable: [],

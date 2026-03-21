@@ -7,8 +7,6 @@ async function hashString(str) {
 }
 
 async function saveGame() {
-	const tiles = document.querySelectorAll('.tile');
-	const gridState = Array.from(tiles).map(tile => tile.textContent);
 	const saveData = {
 		playerX: state.playerX, playerY: state.playerY,
 		currentHealth: state.currentHealth, currentLevel: state.currentLevel,
@@ -17,10 +15,9 @@ async function saveGame() {
 		currentMoves: state.currentMoves, snakesCount: state.snakesCount,
 		doorLocked: state.doorLocked,
 		currentLootTable: state.currentLootTable, currentLootIndex: state.currentLootIndex,
-		currentTileTable: state.currentTileTable,
 		snakes: state.snakes.map(s => ({ x: s.x, y: s.y })),
 		timerSeconds: timer.value(),
-		gridState
+		gridState: state.grid.map(row => [...row]),
 	};
 	const json = JSON.stringify(saveData);
 	const hash = await hashString(json);
@@ -35,19 +32,23 @@ function clearSave() {
 
 function restoreWorld(gridState) {
 	state.rocks = [];
+	state.grid = Array.from({ length: worldSize }, () => Array(worldSize).fill(''));
+
 	const world = document.getElementById('world');
 	world.innerHTML = '';
-	let gridIndex = 0;
+
 	for (let y = 0; y < worldSize; y++) {
 		for (let x = 0; x < worldSize; x++) {
 			const tile = document.createElement('div');
-			tile.className = 'tile';
-			const content = gridState[gridIndex++];
-			setTile(tile, content);
-			if (content === NINJA) state.centerTile = tile;
-			if (content === ROCK) state.rocks.push({ tile, x, y });
-			tile.classList.add("p" + [x, y].toString().replace(",", "-"));
+			tile.className = 'tile p' + x + '-' + y;
 			world.appendChild(tile);
+
+			const value = gridState[y][x];
+			state.grid[y][x] = value;
+			tile.textContent = value;
+			if (value) tile.classList.add(value);
+
+			if (value === ROCK) state.rocks.push({ x, y });
 		}
 	}
 }

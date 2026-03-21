@@ -1,13 +1,12 @@
 # Ninjack – Refactor Plan
 
-## Step 1: Consolidate Mutable State (Pre-split)
+## ✅ Step 1: Consolidate Mutable State (Pre-split)
 
-Wrap all mutable globals into a single `state` object. This is a mechanical find-and-replace with no behavior change.
+Wrapped all mutable globals into a single `state` object. Mechanical find-and-replace with no behavior change.
 
-**Variables to consolidate:**
 ```js
 const state = {
-  playerX, playerY,
+  playerX, playerY, grid,
   currentHealth, currentLevel,
   gold, swords,
   currentKeys, currentChutes, currentMoves,
@@ -17,57 +16,65 @@ const state = {
 };
 ```
 
-**Why first:** Every future module will take `state` as a single import/argument. Without this, splitting files means importing 20+ individual globals per module or implicitly relying on `window.*`. Doing this step first makes the shape of game state visible and makes all subsequent splits clean.
-
-**Immutable constants** (`SNAKE`, `ROCK`, `worldSize`, etc.) stay as-is — they don't need to be in `state`.
+**Immutable constants** (`SNAKE`, `ROCK`, `worldSize`, etc.) stay as-is.
 
 ---
 
-## Step 2: Split into Files
+## ✅ Step 2: Split into Files
 
-Extract modules in dependency order (least-to-most coupled). Each module imports `state` and its direct dependencies only.
+Extracted modules in dependency order. Scripts loaded via `<script>` tags in `index.html`.
 
-| Order | File | Responsibilities |
-|---|---|---|
-| 1 | `constants.js` | Emoji symbols, world dimensions, loot counts |
-| 2 | `timer.js` | `Timer` class |
-| 3 | `tileUtils.js` | `hasClass`, `removeClass`, `setTile`, `getNewTileInDirection`, `getRandomDirection` |
-| 4 | `ui.js` | `updateGoldDisplay`, `notify`, `showModal`, `disableButtons`, `enableButtons` |
-| 5 | `worldGen.js` | `fisherYatesShuffle`, `generateLootTable`, `generateWorld` |
-| 6 | `snake.js` | `canSnakeMoveToTile`, `snakeMove`, `killSnake`, `addSnake`, `moveSnakes` |
-| 7 | `save.js` | `saveGame`, `loadGame`, `clearSave`, `restoreWorld` |
-| 8 | `player.js` | `move`, `checkForMissingKey` |
-| 9 | `game.js` | `resetGame`, `endGame`, `handleDamage`, `handleDeath`, `handleWin`, `handleFinalBoss` |
-| 10 | `main.js` | Entry point, `onKeyDown`, `main()` |
-
-Update `index.html` to load scripts in this order, or migrate to ES modules with `import/export`.
+| File | Responsibilities |
+|---|---|
+| `constants.js` | Emoji symbols, world dimensions, loot counts |
+| `state.js` | Single mutable state object |
+| `timer.js` | `Timer` class + instance |
+| `tileUtils.js` | `getTileElement`, `getGridTile`, `setGridTile`, `getNewTileInDirection`, `getRandomDirection` |
+| `ui.js` | `updateGoldDisplay`, `notify`, `showModal`, `disableButtons`, `enableButtons` |
+| `worldGen.js` | `fisherYatesShuffle`, `generateTileTable`, `generateLootTable`, `generateWorld` |
+| `snake.js` | `canSnakeMoveToTile`, `snakeMove`, `killSnake`, `addSnake`, `moveSnakes` |
+| `save.js` | `saveGame`, `loadGame`, `clearSave`, `restoreWorld` |
+| `game.js` | `startNewGame`, `advanceLevel`, `endGame`, `handleDamage`, `handleDeath`, `handleWin`, `handleFinalBoss`, `setupLevel` |
+| `player.js` | `move`, `checkForMissingKey`, per-tile interaction handlers |
+| `main.js` | Entry point, `onKeyDown`, `main()` |
 
 ---
 
-## Step 3: Refine Each Module (Post-split)
+## ✅ Step 3: Refine Each Module (Post-split)
 
-Once each system lives in its own file, refine in isolation:
+- **`player.js`** — `move()` broken into named per-tile handler functions: `interactWithHole`, `interactWithVegetation`, `interactWithDoor`, `interactWithSnake`, `interactWithOpenTile`, `collectGold`, `collectItem`, `movePlayerTo`.
+- **`worldGen.js`** — Eager top-level `tileTable` replaced by `generateTileTable()`. World generation is fully on-demand and re-seedable.
+- **`game.js`** — `resetGame(newGame)` split into `startNewGame()` and `advanceLevel()` with shared `setupLevel()` helper.
 
-- **`move()` in `player.js`** — Break up the large if/else tile-interaction chain. Each tile type (item pickup, combat, door logic) can become its own handler function.
-- **`tileTable` in `worldGen.js`** — Currently evaluated eagerly at load time (top-level `fisherYatesShuffle` call). Move inside a function so world generation is fully on-demand and re-seedable.
-- **`game.js`** — `resetGame` handles both new game and next level via a `newGame` boolean flag. Split into `startNewGame()` and `advanceLevel()` for clarity.
+---
+
+## ✅ DOM as State
+
+`state.grid[y][x]` is now the single source of truth for tile contents. The DOM is a pure rendering output, written only via `setGridTile(x, y, value)`.
+
+- `tileUtils.js`: `hasClass`/`removeClass`/`setTile` removed; replaced by `getGridTile` / `setGridTile` / `getTileElement`.
+- All game logic reads from `state.grid` directly instead of querying `classList` or `textContent`.
+- `handleDamage(damage, x, y)` and `handleDeath(x, y)` no longer take DOM tile references.
+- `snakeMove(snake, newX, newY)` no longer takes tile parameters.
+- `state.rocks` stores `{x, y}` only (no DOM reference).
+- `state.centerTile` DOM reference removed from state.
+
+---
+
+## ✅ Step 4: Scoring and Persistence
+
+With `state.grid[][]` as the source of truth, save/load operates purely on the grid model.
+
+- `saveGame` serializes `state.grid.map(row => [...row])` — no DOM scraping.
+- `restoreWorld(gridState)` rebuilds `state.grid` and DOM from the 2D array; `state.rocks` re-derived by scanning the grid.
+- `currentTileTable` removed from the save payload — the grid is the world state, and the next level generates a fresh tile table on demand.
 
 ---
 
 ## Next Steps (Future Architectural Work)
 
-These are larger structural changes best done after the file split is stable.
-
-### DOM as State
-Tile contents are currently read from `classList` and `textContent` rather than a separate data model. This couples rendering and game logic throughout — `move()`, the snake AI, and save/load all query the DOM to determine game state.
-
-The fix is to introduce a `grid[][]` array that is the source of truth, with rendering as a pure output step. This unlocks easier testing, replays, and undo.
-
 ### State Object vs. Module Encapsulation
-The `state` object from Step 1 is a pragmatic first step but still mutable and shared globally. A future improvement is to encapsulate state inside modules and expose only getter/setter interfaces, reducing the surface area for accidental mutation.
+The `state` object is a pragmatic solution but still mutable and shared globally. A future improvement is to encapsulate state inside modules and expose only getter/setter interfaces, reducing the surface area for accidental mutation.
 
 ### Combat and Interaction System
-Snake combat and item pickup logic in `move()` are ad hoc conditionals. A more scalable approach is a tile interaction registry — each tile type registers a handler — so adding new tile types doesn't require modifying the core movement function.
-
-### Scoring and Persistence
-`saveGame` currently bakes the DOM grid state directly into the save file. Once DOM-as-state is resolved, save/load can operate purely on the `grid[][]` model, making it simpler and more reliable.
+Snake combat and item pickup logic in `player.js` are still ad hoc conditionals. A tile interaction registry — where each tile type registers a handler — would make adding new tile types non-invasive to the core movement function.
