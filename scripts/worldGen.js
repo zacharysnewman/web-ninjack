@@ -13,6 +13,12 @@ function generateTileTable() {
 	return [...rockTiles, ...treeTiles, ...holeTiles];
 }
 
+function generateRockLootTable() {
+	const heartDrops = Array(2).fill(HEART);
+	const snakeDrops = Array(rockCount - 2).fill(SNAKE);
+	return fisherYatesShuffle([...heartDrops, ...snakeDrops]);
+}
+
 function generateLootTable(chuteCount, doorCount, keyCount) {
 	const remainingCount = treeCount - state.snakesCount - swordsCount - goldBagsCount - gemCount - doorCount - keyCount - chuteCount;
 	const snakeDrops = Array(state.snakesCount).fill(SNAKE);
