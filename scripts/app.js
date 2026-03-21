@@ -6,7 +6,6 @@
 - Winning
 */
 // 🌲🪨💰🐍🗡🥷🚪❤️💀
-let playerX, playerY, centerTile, gold, swords, currentLootTable, currentLootIndex, currentTileTable;
 
 /* Constants */
 const SNAKE = "🐍";
@@ -31,24 +30,34 @@ const maxHealth = 5;
 const startingSnakesCount = 0;
 const startingHeadStonesCount = 0;
 
-/* Variables */
-let currentLevel = startingLevel;
-let currentHealth = maxHealth;
-let currentKeys = 0;
-let currentChutes = 0;
-let currentMoves = 0;
-let snakesCount = startingSnakesCount;
-let snakes = [];
-let rocks = [];
-let doorLocked = true;
-let buttonsDisabled = false;
+/* State */
+const state = {
+	playerX: 0,
+	playerY: 0,
+	centerTile: null,
+	gold: 0,
+	swords: 0,
+	currentLootTable: [],
+	currentLootIndex: 0,
+	currentTileTable: [],
+	currentLevel: startingLevel,
+	currentHealth: maxHealth,
+	currentKeys: 0,
+	currentChutes: 0,
+	currentMoves: 0,
+	snakesCount: startingSnakesCount,
+	snakes: [],
+	rocks: [],
+	doorLocked: true,
+	buttonsDisabled: false,
+};
 
 /* Alert Messages */
 const alertMessages = {
 	welcome: `Welcome to Ninjack! A rogue-like puzzle-ish dungeon crawler game! Let me know if you love it or have any issues! And good luck!\n\nCan you escape Level 🚪10 of the Forest?`,
 	nextLevel: 'Next level!',
-	death: () => `You died 💀 on Level ${currentLevel}!`,
-	win: () => `Take a screenshot! 📸\nYou escaped the Forest!\n\nFinal score:\n💰${gold} Gold\n⏺️${currentMoves} Moves\n🕥${timer.value()} Seconds\n\nReady to beat your score?`
+	death: () => `You died 💀 on Level ${state.currentLevel}!`,
+	win: () => `Take a screenshot! 📸\nYou escaped the Forest!\n\nFinal score:\n💰${state.gold} Gold\n⏺️${state.currentMoves} Moves\n🕥${timer.value()} Seconds\n\nReady to beat your score?`
 };
 
 /* World Constants */
@@ -158,10 +167,15 @@ async function saveGame() {
 	const tiles = document.querySelectorAll('.tile');
 	const gridState = Array.from(tiles).map(tile => tile.textContent);
 	const saveData = {
-		playerX, playerY, currentHealth, currentLevel, gold, swords,
-		currentKeys, currentChutes, currentMoves, snakesCount, doorLocked,
-		currentLootTable, currentLootIndex, currentTileTable,
-		snakes: snakes.map(s => ({ x: s.x, y: s.y })),
+		playerX: state.playerX, playerY: state.playerY,
+		currentHealth: state.currentHealth, currentLevel: state.currentLevel,
+		gold: state.gold, swords: state.swords,
+		currentKeys: state.currentKeys, currentChutes: state.currentChutes,
+		currentMoves: state.currentMoves, snakesCount: state.snakesCount,
+		doorLocked: state.doorLocked,
+		currentLootTable: state.currentLootTable, currentLootIndex: state.currentLootIndex,
+		currentTileTable: state.currentTileTable,
+		snakes: state.snakes.map(s => ({ x: s.x, y: s.y })),
 		timerSeconds: timer.value(),
 		gridState
 	};
@@ -177,7 +191,7 @@ function clearSave() {
 }
 
 function restoreWorld(gridState) {
-	rocks = [];
+	state.rocks = [];
 	const world = document.getElementById('world');
 	world.innerHTML = '';
 	let gridIndex = 0;
@@ -187,8 +201,8 @@ function restoreWorld(gridState) {
 			tile.className = 'tile';
 			const content = gridState[gridIndex++];
 			setTile(tile, content);
-			if (content === NINJA) centerTile = tile;
-			if (content === ROCK) rocks.push({ tile, x, y });
+			if (content === NINJA) state.centerTile = tile;
+			if (content === ROCK) state.rocks.push({ tile, x, y });
 			tile.classList.add("p" + [x, y].toString().replace(",", "-"));
 			world.appendChild(tile);
 		}
@@ -206,15 +220,15 @@ async function loadGame() {
 			return false;
 		}
 		const d = JSON.parse(json);
-		playerX = d.playerX; playerY = d.playerY;
-		currentHealth = d.currentHealth; currentLevel = d.currentLevel;
-		gold = d.gold; swords = d.swords;
-		currentKeys = d.currentKeys; currentChutes = d.currentChutes;
-		currentMoves = d.currentMoves; snakesCount = d.snakesCount;
-		doorLocked = d.doorLocked;
-		currentLootTable = d.currentLootTable; currentLootIndex = d.currentLootIndex;
-		currentTileTable = d.currentTileTable;
-		snakes = d.snakes.map(s => ({ ...s, justSpawned: false }));
+		state.playerX = d.playerX; state.playerY = d.playerY;
+		state.currentHealth = d.currentHealth; state.currentLevel = d.currentLevel;
+		state.gold = d.gold; state.swords = d.swords;
+		state.currentKeys = d.currentKeys; state.currentChutes = d.currentChutes;
+		state.currentMoves = d.currentMoves; state.snakesCount = d.snakesCount;
+		state.doorLocked = d.doorLocked;
+		state.currentLootTable = d.currentLootTable; state.currentLootIndex = d.currentLootIndex;
+		state.currentTileTable = d.currentTileTable;
+		state.snakes = d.snakes.map(s => ({ ...s, justSpawned: false }));
 		timer.reset();
 		timer.seconds = d.timerSeconds + 1;
 		timer.start();
@@ -231,7 +245,7 @@ async function loadGame() {
 function fisherYatesShuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
 	const j = Math.floor(Math.random() * (i + 1));
-	[arr[i], arr[j]] = [arr[j], arr[i]]; 
+	[arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
 }
@@ -240,10 +254,10 @@ const rockTiles = Array(rockCount).fill(ROCK);
 const treeTiles = Array(treeCount).fill(TREE);
 const holeTiles = Array(holeCount).fill(HOLE);
 const tileTable = fisherYatesShuffle([...rockTiles, ...treeTiles, ...holeTiles]);
-	
+
 function generateLootTable(chuteCount, doorCount, keyCount) {
-	const remainingCount = treeCount - snakesCount - swordsCount - goldBagsCount - gemCount - doorCount - keyCount - chuteCount;
-	const snakeDrops = Array(snakesCount).fill(SNAKE);
+	const remainingCount = treeCount - state.snakesCount - swordsCount - goldBagsCount - gemCount - doorCount - keyCount - chuteCount;
+	const snakeDrops = Array(state.snakesCount).fill(SNAKE);
 	const swordDrops = Array(swordsCount).fill(SWORD);
 	const goldBagDrops = Array(goldBagsCount).fill(COIN);
 	const gemDrops = Array(gemCount).fill(GEM);
@@ -261,12 +275,12 @@ function generateLootTable(chuteCount, doorCount, keyCount) {
 		...doorDrop,
 		...keyDrop
 	]), ...chuteDrop];
-	
+
 	return shuffledDrops;
 }
 
 function generateWorld() {
-	rocks = [];
+	state.rocks = [];
 	const world = document.getElementById('world');
 	world.innerHTML = '';
 	let tileIndex = 0;
@@ -275,14 +289,14 @@ function generateWorld() {
 			const tile = document.createElement('div');
 			tile.className = 'tile';
 
-			if (x === playerX && y === playerY) {
+			if (x === state.playerX && y === state.playerY) {
 				tile.textContent = NINJA;
 				tile.classList.add(NINJA);
-				centerTile = tile;
+				state.centerTile = tile;
 			} else {
-				const tileValue = currentTileTable[tileIndex++];
+				const tileValue = state.currentTileTable[tileIndex++];
 				if(tileValue === ROCK) {
-					rocks.push({tile,x,y});
+					state.rocks.push({tile,x,y});
 				}
 				setTile(tile, tileValue);
 			}
@@ -295,11 +309,11 @@ function generateWorld() {
 function updateGoldDisplay() {
 	const inventory = document.getElementById('inventory');
 	const stats = document.getElementById('stats');
-	const dynamicText = currentChutes > 0 ? ` 🪂${currentChutes}` : `🔑${currentKeys}`;
-	inventory.textContent = `🚪${currentLevel} ❤️${currentHealth} 🗡${swords}${dynamicText}`;
-	stats.textContent = `💰${gold} ⏺️${currentMoves} 🕥${timer.value()}`;
+	const dynamicText = state.currentChutes > 0 ? ` 🪂${state.currentChutes}` : `🔑${state.currentKeys}`;
+	inventory.textContent = `🚪${state.currentLevel} ❤️${state.currentHealth} 🗡${state.swords}${dynamicText}`;
+	stats.textContent = `💰${state.gold} ⏺️${state.currentMoves} 🕥${timer.value()}`;
 }
-		
+
 function hasClass(tile, className) {
 	return tile.classList.contains(className);
 }
@@ -328,7 +342,7 @@ function endGame() {
 function getNewTileInDirection(direction, startX, startY) {
   	let newX = startX;
 	let newY = startY;
-	
+
 	switch (direction) {
 		case 'up':
 			newY = Math.max(0, startY - 1);
@@ -343,7 +357,7 @@ function getNewTileInDirection(direction, startX, startY) {
 			newX = Math.min(worldSize - 1, startX + 1);
 		break;
 	}
-	
+
 	const newTile = document.querySelector(`.tile:nth-child(${newY * worldSize + newX + 1})`);
 
 	return { newTile, newX, newY };
@@ -353,7 +367,7 @@ function getRandomDirection() {
 	const directions = ['up', 'down', 'left', 'right'];
 	const randomIndex = Math.floor(Math.random() * directions.length);
 	const randomDirection = directions[randomIndex];
-	
+
 	return randomDirection;
 }
 
@@ -370,26 +384,26 @@ function snakeMove(snake, oldTile, newTile, newX, newY) {
 		console.log("No tile: " + text);
 		return;
 	}
-	
+
 	if(snake.justSpawned) {
 		snake.justSpawned = false;
 		return;
 	}
-	
+
 	if(canSnakeMoveToTile(newTile, newX, newY)) {
 		removeClass(oldTile, SNAKE);
 		setTile(oldTile, '');
 		const isHole = hasClass(newTile, HOLE);
 		const isPlayer = hasClass(newTile, NINJA);
-		const shouldDie =  isHole || (isPlayer && currentHealth > 1);
-		
+		const shouldDie = isHole || (isPlayer && state.currentHealth > 1);
+
 		if(hasClass(newTile, NINJA)) {
-			if(currentHealth <= 1) {
+			if(state.currentHealth <= 1) {
 				notify(SKULL, newTile);
 			}
 			handleDamage(1, newTile);
 		}
-		
+
 		if(shouldDie) {
 			killSnake(snake.x, snake.y);
 			notify(SKULL, isHole ? newTile : oldTile);
@@ -403,15 +417,15 @@ function snakeMove(snake, oldTile, newTile, newX, newY) {
 }
 
 function killSnake(x, y) {
-	snakes = snakes.filter(snake => !(snake.x === x && snake.y === y));
+	state.snakes = state.snakes.filter(snake => !(snake.x === x && snake.y === y));
 }
 
 function addSnake(x, y) {
-	snakes.push({ x, y, justSpawned: true });
+	state.snakes.push({ x, y, justSpawned: true });
 }
 
 function moveSnakes() {
-	for(const snake of snakes) {
+	for(const snake of state.snakes) {
 		const direction = getRandomDirection();
 		const selector = "p" + [snake.x, snake.y].toString().replace(",", "-");
 		const tile = document.getElementsByClassName(selector)[0];
@@ -460,19 +474,19 @@ function getRandomInRange(a, b) {
 }
 
 function disableButtons() {
-	const buttons = document.querySelectorAll('button'); // Select all buttons
+	const buttons = document.querySelectorAll('button');
 	buttons.forEach(button => {
-		button.disabled = true; // Disable each button
+		button.disabled = true;
 	});
-	buttonsDisabled = true;
+	state.buttonsDisabled = true;
 }
 
 function enableButtons() {
-	const buttons = document.querySelectorAll('button'); // Select all buttons
+	const buttons = document.querySelectorAll('button');
 	buttons.forEach(button => {
-		button.disabled = false; // Disable each button
+		button.disabled = false;
 	});
-	buttonsDisabled = false;
+	state.buttonsDisabled = false;
 }
 
 function checkForMissingKey() {
@@ -480,57 +494,57 @@ function checkForMissingKey() {
 	if(allTrees.length > 0) {
 		return;
 	}
-	
+
 	const allKeys = document.querySelectorAll('.' + KEY);
 	const key = allKeys[0];
-	
+
 	if(key && key.textContent !== KEY) {
 		key.textContent = KEY;
 		return;
 	}
-	
-   	if(doorLocked && currentKeys < 1 && !key) {
-		currentKeys = 1;
+
+   	if(state.doorLocked && state.currentKeys < 1 && !key) {
+		state.currentKeys = 1;
 		updateGoldDisplay();
    	}
 }
 
 function move(direction) {
 	checkForMissingKey();
-	currentMoves += 1;
+	state.currentMoves += 1;
 	updateGoldDisplay();
 	const currentTile = document.querySelector(`.tile.${NINJA}`);
 	let shouldEndGame = false;
-	const { newTile, newX, newY } = getNewTileInDirection(direction, playerX, playerY);
-	
+	const { newTile, newX, newY } = getNewTileInDirection(direction, state.playerX, state.playerY);
+
 	if(hasClass(newTile, HOLE)) {
-		if(currentChutes > 0) {
+		if(state.currentChutes > 0) {
 			setTile(currentTile, '');
 			removeClass(currentTile, NINJA);
 			notify(CHUTE, newTile);
 			handleWin();
 		} else {
 		   	notify(SKULL, newTile);
-			handleDamage(currentHealth, currentTile);
+			handleDamage(state.currentHealth, currentTile);
 		}
 		return;
-	} else if (hasClass(newTile, TREE) ||hasClass(newTile, ROCK)) {
+	} else if (hasClass(newTile, TREE) || hasClass(newTile, ROCK)) {
 		isRock = hasClass(newTile, ROCK);
 		removeClass(newTile, TREE);
 		removeClass(newTile, ROCK);
-		
-		const revealedTile = isRock ? SNAKE : currentLootTable[currentLootIndex++];
+
+		const revealedTile = isRock ? SNAKE : state.currentLootTable[state.currentLootIndex++];
 		if(revealedTile === SNAKE) {
 			addSnake(newX, newY);
 		}
 		setTile(newTile, revealedTile);
 		notify(isRock ? ROCK : TREE, newTile);
 	} else if(hasClass(newTile, DOOR)) {
-		if(doorLocked) {
-			if(currentKeys > 0) {
-				currentKeys = 0;
+		if(state.doorLocked) {
+			if(state.currentKeys > 0) {
+				state.currentKeys = 0;
 				updateGoldDisplay();
-				doorLocked = false;
+				state.doorLocked = false;
 				notify(UNLOCK, newTile);
 			} else {
 				notify(LOCK, newTile);
@@ -538,12 +552,12 @@ function move(direction) {
 			saveGame();
 			return;
 		}
-		
+
 		currentTile.textContent = '';
 		removeClass(currentTile, NINJA);
 
-		playerX = newX;
-		playerY = newY;
+		state.playerX = newX;
+		state.playerY = newY;
 
 		newTile.textContent = NINJA;
 		newTile.classList.add(NINJA);
@@ -553,52 +567,52 @@ function move(direction) {
 	} else {
 		if (hasClass(newTile, GOLD)) {
 			const goldAmount = 5;
-			gold += goldAmount;
+			state.gold += goldAmount;
 			updateGoldDisplay();
 			newTile.textContent = '';
 			removeClass(newTile, GOLD);
 			notify(GOLD, newTile);
 		} else if (hasClass(newTile, COIN)) {
 			const goldAmount = 1;
-			gold += goldAmount;
+			state.gold += goldAmount;
 			updateGoldDisplay();
 			newTile.textContent = '';
 			removeClass(newTile, COIN);
 			notify(COIN, newTile);
 		} else if (hasClass(newTile, GEM)) {
 			const goldAmount = 10;
-			gold += goldAmount;
+			state.gold += goldAmount;
 			updateGoldDisplay();
 			newTile.textContent = '';
 			removeClass(newTile, GEM);
 			notify(GEM, newTile);
 		} else if(hasClass(newTile, SWORD)) {
-			swords++;
+			state.swords++;
 			updateGoldDisplay();
 			newTile.textContent = '';
 			removeClass(newTile, SWORD);
 			notify(SWORD, newTile);
 		} else if(hasClass(newTile, HEART)) {
-			currentHealth += 1;
+			state.currentHealth += 1;
 			updateGoldDisplay();
 			newTile.textContent = '';
 			removeClass(newTile, HEART);
 			notify(HEART, newTile);
 		} else if(hasClass(newTile, KEY)) {
-			currentKeys = 1;
+			state.currentKeys = 1;
 			updateGoldDisplay();
 			newTile.textContent = '';
 			removeClass(newTile, KEY);
 			notify(KEY, newTile);
 		} else if(hasClass(newTile, CHUTE)) {
-			currentChutes = 1;
+			state.currentChutes = 1;
 			updateGoldDisplay();
 			newTile.textContent = '';
 			removeClass(newTile, CHUTE);
 			notify(CHUTE, newTile);
 			handleFinalBoss();
 		} else if(hasClass(newTile, SNAKE)) {
-			if(swords > 0 || currentHealth > 1) {
+			if(state.swords > 0 || state.currentHealth > 1) {
 				setTile(newTile, '');
 				removeClass(newTile, SNAKE);
 				notify(SKULL, newTile);
@@ -606,12 +620,12 @@ function move(direction) {
 			} else {
 				notify(SKULL, currentTile);
 			}
-			
-			if(swords > 0) {
+
+			if(state.swords > 0) {
 				const isHeart = getRandomInRange(1, 100) > 80;
 				const lootDrop = isHeart ? HEART : GOLD;
 				setTile(newTile, lootDrop);
-				swords--;
+				state.swords--;
 				updateGoldDisplay();
 				notify(SWORD, currentTile);
 				notify(SKULL, newTile);
@@ -621,26 +635,26 @@ function move(direction) {
 			 	return;
 			}
 		}
-		
+
 		currentTile.textContent = '';
 		removeClass(currentTile, NINJA);
 
-		playerX = newX;
-		playerY = newY;
-		
+		state.playerX = newX;
+		state.playerY = newY;
+
 		newTile.textContent = NINJA;
 		newTile.classList.add(NINJA);
 	}
-	
+
 	moveSnakes();
 	saveGame();
 }
 
 function handleDamage(damage, currentTile) {
-  	currentHealth -= damage;
+  	state.currentHealth -= damage;
   	updateGoldDisplay();
-				
-	if(currentHealth <= 0) {
+
+	if(state.currentHealth <= 0) {
 		handleDeath(currentTile);
 	} else {
 		notify(DAMAGE, currentTile);
@@ -663,7 +677,7 @@ function handleDeath(currentTile) {
 }
 
 function handleFinalBoss() {
-	rocks.forEach(rock => {
+	state.rocks.forEach(rock => {
 		removeClass(rock.tile, ROCK);
 		notify(ROCK, rock.tile);
  		setTile(rock.tile, SNAKE);
@@ -690,35 +704,35 @@ function resetGame(newGame = true) {
 
 	if(newGame) {
 		clearSave();
-		playerX = Math.floor(worldSize / 2);
-		playerY = Math.floor(worldSize / 2);
-		gold = 0;
-		swords = 0;
-		currentHealth = maxHealth;
-		currentLevel = startingLevel;
-		currentChutes = 0;
-		currentMoves = 0;
-		snakesCount = startingSnakesCount;
+		state.playerX = Math.floor(worldSize / 2);
+		state.playerY = Math.floor(worldSize / 2);
+		state.gold = 0;
+		state.swords = 0;
+		state.currentHealth = maxHealth;
+		state.currentLevel = startingLevel;
+		state.currentChutes = 0;
+		state.currentMoves = 0;
+		state.snakesCount = startingSnakesCount;
 		timer.reset();
 		timer.start();
 	} else {
-		snakesCount += 1;
-		if(currentLevel === 9) {
+		state.snakesCount += 1;
+		if(state.currentLevel === 9) {
 			chuteCount = 1;
 			doorCount = 0;
 			keyCount = 0;
 		}
 	}
 
-	snakes = [];
-	currentKeys = 0;
-	doorLocked = true;
+	state.snakes = [];
+	state.currentKeys = 0;
+	state.doorLocked = true;
 
-	currentLootIndex = 0;
-	currentLootTable = generateLootTable(chuteCount, doorCount, keyCount);
-	currentTileTable = fisherYatesShuffle([...tileTable]);
+	state.currentLootIndex = 0;
+	state.currentLootTable = generateLootTable(chuteCount, doorCount, keyCount);
+	state.currentTileTable = fisherYatesShuffle([...tileTable]);
 	generateWorld();
-	currentLevel += 1;
+	state.currentLevel += 1;
 	updateGoldDisplay();
 
 	if(!newGame) {
@@ -727,10 +741,10 @@ function resetGame(newGame = true) {
 }
 
 const onKeyDown = (event) => {
-	if(buttonsDisabled) {
+	if(state.buttonsDisabled) {
 		return;
 	}
-	
+
 	switch (event.key) {
 		case 'ArrowUp': // Up arrow key
 			move('up');
@@ -765,10 +779,3 @@ async function main() {
 }
 
 main();
-
-
-
-
-
-
-
