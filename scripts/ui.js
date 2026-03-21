@@ -62,16 +62,12 @@ async function showModal(bodyText) {
 
 function disableButtons() {
 	const buttons = document.querySelectorAll('button');
-	buttons.forEach(button => {
-		button.disabled = true;
-	});
-	state.buttonsDisabled = true;
+	buttons.forEach(button => { button.disabled = true; });
+	state.setButtonsDisabled(true);
 }
 
 function enableButtons() {
 	const buttons = document.querySelectorAll('button');
-	buttons.forEach(button => {
-		button.disabled = false;
-	});
-	state.buttonsDisabled = false;
+	buttons.forEach(button => { button.disabled = false; });
+	state.setButtonsDisabled(false);
 }

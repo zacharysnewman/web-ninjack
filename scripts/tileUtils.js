@@ -7,7 +7,7 @@ function getGridTile(x, y) {
 }
 
 function setGridTile(x, y, value) {
-	state.grid[y][x] = value;
+	state.setCell(x, y, value);
 	const tile = getTileElement(x, y);
 	tile.className = 'tile p' + x + '-' + y;
 	tile.textContent = value;
@@ -19,9 +19,9 @@ function getNewTileInDirection(direction, startX, startY) {
 	let newY = startY;
 
 	switch (direction) {
-		case 'up':    newY = Math.max(0, startY - 1);            break;
+		case 'up':    newY = Math.max(0, startY - 1);             break;
 		case 'down':  newY = Math.min(worldSize - 1, startY + 1); break;
-		case 'left':  newX = Math.max(0, startX - 1);            break;
+		case 'left':  newX = Math.max(0, startX - 1);             break;
 		case 'right': newX = Math.min(worldSize - 1, startX + 1); break;
 	}
 
