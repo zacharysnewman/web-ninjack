@@ -14,10 +14,10 @@ Move by tapping/clicking the directional buttons or using arrow keys. Bumping in
 | 🗡 Sword | Auto-used when attacking 🐍 |
 | 🚪 Door | Needs 🔑 to unlock, walk through to advance |
 | 🕳️ Hole | 💀 |
-| 🪙 Coin* | Drops: worth 1 gold |
-| 💰 Gold* | Drops: worth 5 gold |
-| 💎 Gem* | Drops: worth 10 gold |
-| ❤️ Heart* | Drops: worth 1 health |
+| 🪙 Coin | Worth 1 gold |
+| 💰 Gold | Worth 5 gold |
+| 💎 Gem | Worth 10 gold |
+| ❤️ Heart | Worth 1 health |
 
 ## Objective
 
