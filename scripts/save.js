@@ -76,7 +76,13 @@ async function loadGame() {
 		timer.reset();
 		timer.seconds = d.timerSeconds + 1;
 		timer.start();
-		restoreWorld(d.gridState);
+		let gridState = d.gridState;
+		if (Array.isArray(gridState) && !Array.isArray(gridState[0])) {
+			gridState = Array.from({ length: worldSize }, (_, y) =>
+				gridState.slice(y * worldSize, (y + 1) * worldSize)
+			);
+		}
+		restoreWorld(gridState);
 		updateGoldDisplay();
 		await saveGame();
 		return true;
