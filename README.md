@@ -8,16 +8,16 @@ Move by tapping/clicking the directional buttons or using arrow keys. Bumping in
 
 | Tile | |
 |------|---|
-| 🌲 | 🗡 💰 💎 🐍 🔑 🚪 |
-| 🪨 | 🐍 ❤️ |
-| 🐍 | Attacking costs 1 🗡 (or 1 ❤️ if no 🗡); being attacked costs 1 ❤️ |
-| 🗡 | Auto-used when attacking 🐍 |
-| 🚪 | Needs 🔑 to unlock, walk through to advance |
-| 🕳️ | 💀 |
-| 🪙 | +1 💰 |
-| 💰 | +5 💰 |
-| 💎 | Drops: 💎 |
-| ❤️ | +1 ❤️ |
+| 🌲 Tree | Drops: 🗡 💰 💎 🐍 🔑 🚪 |
+| 🪨 Rock | Drops: 🐍 ❤️ |
+| 🐍 Snake | Attacking costs 1 🗡 (or 1 ❤️ if no 🗡); being attacked costs 1 ❤️ |
+| 🗡 Sword | Auto-used when attacking 🐍 |
+| 🚪 Door | Needs 🔑 to unlock, walk through to advance |
+| 🕳️ Hole | 💀 |
+| 🪙 Coin | Drops: worth 1 gold |
+| 💰 Gold | Drops: worth 5 gold |
+| 💎 Gem | Drops: worth 10 gold |
+| ❤️ Heart | Drops: worth 1 health |
 
 ## Objective
 
