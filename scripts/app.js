@@ -142,6 +142,72 @@ async function showModal(bodyText) {
 
 
 
+/* Save Game */
+const SAVE_KEY = 'ninjack_save';
+
+function saveGame() {
+	const tiles = document.querySelectorAll('.tile');
+	const gridState = Array.from(tiles).map(tile => tile.textContent);
+	const saveData = {
+		playerX, playerY, currentHealth, currentLevel, gold, swords,
+		currentKeys, currentChutes, currentMoves, snakesCount, doorLocked,
+		currentLootTable, currentLootIndex, currentTileTable,
+		snakes: snakes.map(s => ({ x: s.x, y: s.y })),
+		timerSeconds: timer.value(),
+		gridState
+	};
+	localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(saveData)));
+}
+
+function clearSave() {
+	localStorage.removeItem(SAVE_KEY);
+}
+
+function restoreWorld(gridState) {
+	rocks = [];
+	const world = document.getElementById('world');
+	world.innerHTML = '';
+	let gridIndex = 0;
+	for (let y = 0; y < worldSize; y++) {
+		for (let x = 0; x < worldSize; x++) {
+			const tile = document.createElement('div');
+			tile.className = 'tile';
+			const content = gridState[gridIndex++];
+			setTile(tile, content);
+			if (content === NINJA) centerTile = tile;
+			if (content === ROCK) rocks.push({ tile, x, y });
+			tile.classList.add("p" + [x, y].toString().replace(",", "-"));
+			world.appendChild(tile);
+		}
+	}
+}
+
+function loadGame() {
+	const encoded = localStorage.getItem(SAVE_KEY);
+	if (!encoded) return false;
+	try {
+		const d = JSON.parse(atob(encoded));
+		playerX = d.playerX; playerY = d.playerY;
+		currentHealth = d.currentHealth; currentLevel = d.currentLevel;
+		gold = d.gold; swords = d.swords;
+		currentKeys = d.currentKeys; currentChutes = d.currentChutes;
+		currentMoves = d.currentMoves; snakesCount = d.snakesCount;
+		doorLocked = d.doorLocked;
+		currentLootTable = d.currentLootTable; currentLootIndex = d.currentLootIndex;
+		currentTileTable = d.currentTileTable;
+		snakes = d.snakes.map(s => ({ ...s, justSpawned: false }));
+		timer.reset();
+		timer.seconds = d.timerSeconds;
+		timer.start();
+		restoreWorld(d.gridState);
+		updateGoldDisplay();
+		return true;
+	} catch (e) {
+		clearSave();
+		return false;
+	}
+}
+
 function fisherYatesShuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
 	const j = Math.floor(Math.random() * (i + 1));
@@ -449,6 +515,7 @@ function move(direction) {
 			} else {
 				notify(LOCK, newTile);
 			}
+			saveGame();
 			return;
 		}
 		
@@ -546,6 +613,7 @@ function move(direction) {
 	}
 	
 	moveSnakes();
+	saveGame();
 }
 
 function handleDamage(damage, currentTile) {
@@ -598,8 +666,9 @@ function resetGame(newGame = true) {
 	let chuteCount = 0;
 	let doorCount = 1;
 	let keyCount = 1;
-	
+
 	if(newGame) {
+		clearSave();
 		playerX = Math.floor(worldSize / 2);
 		playerY = Math.floor(worldSize / 2);
 		gold = 0;
@@ -619,7 +688,7 @@ function resetGame(newGame = true) {
 			keyCount = 0;
 		}
 	}
-	
+
 	snakes = [];
 	currentKeys = 0;
 	doorLocked = true;
@@ -630,6 +699,10 @@ function resetGame(newGame = true) {
 	generateWorld();
 	currentLevel += 1;
 	updateGoldDisplay();
+
+	if(!newGame) {
+		saveGame();
+	}
 }
 
 const onKeyDown = (event) => {
@@ -659,13 +732,15 @@ const onKeyDown = (event) => {
 
 async function main() {
 	document.addEventListener('contextmenu', function (event) {
-  event.preventDefault(); // Prevents the context menu from appearing
-});
+		event.preventDefault();
+	});
 	document.addEventListener('keydown', onKeyDown);
-	resetGame();
-	timer.stop();
-	await showModal(alertMessages.welcome);
-	resetGame();
+	if (!loadGame()) {
+		resetGame();
+		timer.stop();
+		await showModal(alertMessages.welcome);
+		resetGame();
+	}
 }
 
 main();
