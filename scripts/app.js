@@ -147,8 +147,14 @@ async function showModal(bodyText) {
 
 /* Save Game */
 const SAVE_KEY = 'ninjack_save';
+const SAVE_HASH_KEY = 'ninjack_save_hash';
 
-function saveGame() {
+async function hashString(str) {
+	const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+	return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function saveGame() {
 	const tiles = document.querySelectorAll('.tile');
 	const gridState = Array.from(tiles).map(tile => tile.textContent);
 	const saveData = {
@@ -159,11 +165,15 @@ function saveGame() {
 		timerSeconds: timer.value(),
 		gridState
 	};
-	localStorage.setItem(SAVE_KEY, btoa(encodeURIComponent(JSON.stringify(saveData))));
+	const json = JSON.stringify(saveData);
+	const hash = await hashString(json);
+	localStorage.setItem(SAVE_KEY, json);
+	localStorage.setItem(SAVE_HASH_KEY, hash);
 }
 
 function clearSave() {
 	localStorage.removeItem(SAVE_KEY);
+	localStorage.removeItem(SAVE_HASH_KEY);
 }
 
 function restoreWorld(gridState) {
@@ -185,11 +195,17 @@ function restoreWorld(gridState) {
 	}
 }
 
-function loadGame() {
-	const encoded = localStorage.getItem(SAVE_KEY);
-	if (!encoded) return false;
+async function loadGame() {
+	const json = localStorage.getItem(SAVE_KEY);
+	if (!json) return false;
 	try {
-		const d = JSON.parse(decodeURIComponent(atob(encoded)));
+		const storedHash = localStorage.getItem(SAVE_HASH_KEY);
+		const computedHash = await hashString(json);
+		if (storedHash !== computedHash) {
+			clearSave();
+			return false;
+		}
+		const d = JSON.parse(json);
 		playerX = d.playerX; playerY = d.playerY;
 		currentHealth = d.currentHealth; currentLevel = d.currentLevel;
 		gold = d.gold; swords = d.swords;
@@ -739,7 +755,7 @@ async function main() {
 		event.preventDefault();
 	});
 	document.addEventListener('keydown', onKeyDown);
-	if (!loadGame()) {
+	if (!await loadGame()) {
 		resetGame();
 		timer.stop();
 		await showModal(alertMessages.welcome);
