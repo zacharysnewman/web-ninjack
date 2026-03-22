@@ -87,6 +87,7 @@ async function loadGame() {
 			);
 		}
 		restoreWorld(gridState);
+		setGridTile(state.playerX, state.playerY, NINJA);
 		updateGoldDisplay();
 		await saveGame();
 		return true;
