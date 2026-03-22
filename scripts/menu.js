@@ -6,19 +6,55 @@ function showMainMenu() {
 	return new Promise(resolve => {
 		const menu = document.createElement('div');
 		menu.id = 'main-menu';
-		menu.innerHTML = `
-			<h1 class="outlined menu-title">NINJACK</h1>
-			<div id="menu-ninja-bg">${NINJA}</div>
-			<button id="menu-start">▶ Start</button>
-			<div class="skin-dropdown-wrapper">
-				<div class="skin-dropdown-popup" id="skin-popup" hidden></div>
-				<button class="skin-dropdown-btn" id="skin-dropdown-btn">${NINJA}</button>
+
+		// Tiled tree background
+		const treeBg = document.createElement('div');
+		treeBg.id = 'menu-tree-bg';
+		treeBg.textContent = '🌲'.repeat(600);
+		menu.appendChild(treeBg);
+
+		// Dark overlay
+		const overlay = document.createElement('div');
+		overlay.id = 'menu-overlay';
+		menu.appendChild(overlay);
+
+		// Centered content
+		const content = document.createElement('div');
+		content.id = 'menu-content';
+		content.innerHTML = `
+			<h1 class="menu-title">🥷 NINJACK</h1>
+			<div id="menu-ninja-preview">${NINJA}</div>
+			<button id="menu-start">▶ &nbsp;Start</button>
+		`;
+		menu.appendChild(content);
+
+		// Skin dropdown — fixed bottom-right
+		const skinWrapper = document.createElement('div');
+		skinWrapper.className = 'skin-dropdown-wrapper';
+		skinWrapper.innerHTML = `
+			<span class="skin-label">Ninja Skin</span>
+			<div class="skin-dropdown-inner">
+				<div class="skin-dropdown-popup" id="skin-popup"></div>
+				<button class="skin-dropdown-btn" id="skin-dropdown-btn">${NINJA} ▾</button>
 			</div>
 		`;
+		menu.appendChild(skinWrapper);
+
 		document.body.appendChild(menu);
 
 		const popup = menu.querySelector('#skin-popup');
 		const dropdownBtn = menu.querySelector('#skin-dropdown-btn');
+		let popupOpen = false;
+
+		function closePopup() {
+			popupOpen = false;
+			popup.classList.remove('open');
+		}
+
+		function openPopup() {
+			popupOpen = true;
+			popup.classList.add('open');
+		}
 
 		SKIN_OPTIONS.forEach(skin => {
 			const btn = document.createElement('button');
@@ -28,22 +64,26 @@ function showMainMenu() {
 				e.stopPropagation();
 				NINJA = skin;
 				localStorage.setItem(SKIN_KEY, skin);
-				menu.querySelector('#menu-ninja-bg').textContent = skin;
-				dropdownBtn.textContent = skin;
+				menu.querySelector('#menu-ninja-preview').textContent = skin;
+				dropdownBtn.textContent = skin + ' ▾';
 				popup.querySelectorAll('.skin-option').forEach(b =>
 					b.classList.toggle('skin-selected', b.textContent === skin)
 				);
-				popup.hidden = true;
+				closePopup();
 			});
 			popup.appendChild(btn);
 		});
 
 		dropdownBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
-			popup.hidden = !popup.hidden;
+			if (popupOpen) {
+				closePopup();
+			} else {
+				openPopup();
+			}
 		});
 
-		document.addEventListener('click', () => { popup.hidden = true; });
+		document.addEventListener('click', () => { closePopup(); });
 
 		menu.querySelector('#menu-start').addEventListener('click', () => {
 			menu.remove();
