@@ -29,7 +29,7 @@ class Timer {
   }
 
   reset() {
-	this.stop();
+	if (this.interval) this.stop();
 	this.seconds = 0;
   }
 

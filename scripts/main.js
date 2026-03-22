@@ -37,23 +37,22 @@ async function main() {
 	});
 	document.addEventListener('keydown', onKeyDown);
 
-	// Pre-render world before menu — load save if available, otherwise generate a new game
-	const hasSave = await loadGame();
-	if (!hasSave) {
-		startNewGame();
-	}
-	timer.stop();
-
+	const hasSave = !!localStorage.getItem(SAVE_KEY);
+	generateBackground();
 	await showMainMenu(hasSave);
-	state.buttonsDisabled = false;
 
 	if (hasSave) {
-		timer.start();
+		const loaded = await loadGame();
+		if (!loaded) {
+			startNewGame();
+			await showModal(alertMessages.welcome);
+		}
 	} else {
-		timer.reset();
+		startNewGame();
 		await showModal(alertMessages.welcome);
-		timer.start();
 	}
+
+	state.buttonsDisabled = false;
 }
 
 main();
