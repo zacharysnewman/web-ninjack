@@ -21,6 +21,7 @@ function handleDeath(x, y) {
 	disableButtons();
 	setTimeout(async () => {
 		await showModal(alertMessages.death());
+		await showMainMenu();
 		startNewGame();
 		enableButtons();
 	}, 1000);
@@ -39,6 +40,7 @@ function handleWin() {
 	disableButtons();
 	setTimeout(async () => {
 		await showModal(alertMessages.win());
+		await showMainMenu();
 		startNewGame();
 		enableButtons();
 	}, 1000);

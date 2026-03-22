@@ -36,10 +36,8 @@ async function main() {
 		event.preventDefault();
 	});
 	document.addEventListener('keydown', onKeyDown);
+	await showMainMenu();
 	if (!await loadGame()) {
-		startNewGame();
-		timer.stop();
-		await showModal(alertMessages.welcome);
 		startNewGame();
 	}
 }
