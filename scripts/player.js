@@ -137,7 +137,7 @@ function move(direction) {
 	if (tileValue === TREE || tileValue === ROCK) {
 		interactWithVegetation(newX, newY);
 		moveSnakes();
-		saveGame();
+		if (state.currentHealth > 0) saveGame();
 		return;
 	}
 
@@ -151,5 +151,5 @@ function move(direction) {
 
 	movePlayerTo(newX, newY);
 	moveSnakes();
-	saveGame();
+	if (state.currentHealth > 0) saveGame();
 }
