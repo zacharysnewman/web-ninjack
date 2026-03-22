@@ -55,7 +55,7 @@ async function main() {
 
 	await showModal(alertMessages.welcome);
 	await menuPromise;
-	state.buttonsDisabled = false;
+	state.setButtonsDisabled(false);
 }
 
 main();

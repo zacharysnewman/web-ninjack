@@ -2,7 +2,7 @@ const SKIN_OPTIONS = ['🥷', '🥷🏻', '🥷🏼', '🥷🏽', '🥷🏾', '�
 const SKIN_KEY = 'ninjaSkin';
 
 function showMainMenu(saveLevel = null, onContinue = null, onNewGame = () => {}) {
-	state.buttonsDisabled = true;
+	state.setButtonsDisabled(true);
 	return new Promise(resolve => {
 		const menu = document.createElement('div');
 		menu.id = 'main-menu';
