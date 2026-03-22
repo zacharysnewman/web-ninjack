@@ -5,8 +5,12 @@ body {
 	font-family: Arial, sans-serif
 }
 h1 {
-	color: blue;
+	color: #FFD700;
 	text-shadow: 2px 2px 0 black;
+}
+h1.outlined {
+	background-color: rgba(0, 0, 0, 0.4);
+	padding: 4px 16px;
 }
 .menu-bar {
   display: flex;
@@ -65,7 +69,7 @@ h1 {
 button {
 	font-size: 40px;
 	background-color: darkgreen;
-	border-color: darkgrey;
+	border: 2px solid forestgreen;
 	border-radius: 10px;
 	width: auto;
 	height: auto;
@@ -184,7 +188,9 @@ button:disabled {
 	inset: 0;
 	z-index: 100;
 	overflow: hidden;
-	background-color: #1a3a1a;
+	background: radial-gradient(ellipse at center, #2e7d32 0%, #1a3a1a 70%, #0d1f0d 100%);
+	opacity: 1;
+	transition: opacity 0.5s ease;
 }
 
 #menu-tree-bg {
@@ -201,7 +207,7 @@ button:disabled {
 #menu-overlay {
 	position: absolute;
 	inset: 0;
-	background: rgba(0, 20, 0, 0.55);
+	background: rgba(0, 20, 0, 0.45);
 	z-index: 1;
 	pointer-events: none;
 }
@@ -214,49 +220,52 @@ button:disabled {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 1.2em;
+	gap: 1.0em;
 }
 
 .menu-title {
-	font-size: clamp(2.8rem, 11vmin, 6.5rem);
+	font-size: clamp(3.5rem, 15vmin, 8rem);
 	margin: 0;
-	color: #d4ffd4;
-	text-shadow: 3px 3px 0 #003300, 0 0 24px rgba(0,255,0,0.35);
-	letter-spacing: 0.06em;
+	color: #FFD700;
+	text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+	letter-spacing: 2px;
+	font-family: Arial, sans-serif;
+	font-weight: bold;
+	display: inline-block;
+	padding: 2px 20px;
+}
+
+#menu-skin-preview {
+	font-size: clamp(4rem, 16vmin, 9rem);
+	line-height: 1;
 }
 
 #menu-start {
 	font-size: clamp(1.2rem, 5vmin, 2rem);
 	padding: 0.55em 2.2em;
-	background: linear-gradient(160deg, #1a6b1a, #0e420e);
-	color: #d4ffd4;
-	border: 2px solid #4aaa4a;
-	border-radius: 14px;
+	background: #4caf50;
+	color: #1b5e20;
+	border: 2px solid forestgreen;
+	border-radius: 12px;
 	cursor: pointer;
 	font-family: Arial, sans-serif;
 	font-weight: bold;
-	letter-spacing: 0.05em;
-	box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+	box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
 	touch-action: manipulation;
 }
 
 #menu-start:hover {
-	background: linear-gradient(160deg, #227722, #134813);
-	border-color: #88dd88;
+	background: #66bb6a;
 	transform: scale(1.06);
-	box-shadow: 0 6px 22px rgba(0,0,0,0.55), 0 0 14px rgba(80,200,80,0.3);
+	box-shadow: 0 6px 18px rgba(0,0,0,0.45);
 }
 #menu-start:active { transform: scale(0.97); }
 
 /* ── Skin Dropdown ── */
 .skin-dropdown-wrapper {
-	position: fixed;
-	bottom: 16px;
-	right: 16px;
-	z-index: 3;
 	display: flex;
 	flex-direction: column;
-	align-items: flex-end;
+	align-items: center;
 	gap: 4px;
 }
 
@@ -275,7 +284,7 @@ button:disabled {
 .skin-dropdown-btn {
 	font-size: clamp(1.4rem, 5.5vmin, 2rem);
 	background: rgba(10, 60, 10, 0.9);
-	border: 2px solid #4aaa4a;
+	border: 2px solid forestgreen;
 	border-radius: 10px;
 	cursor: pointer;
 	padding: 6px 12px;
@@ -293,7 +302,7 @@ button:disabled {
 	bottom: calc(100% + 8px);
 	right: 0;
 	background: rgba(10, 50, 10, 0.97);
-	border: 2px solid #4aaa4a;
+	border: 2px solid forestgreen;
 	border-radius: 12px;
 	padding: 6px;
 	flex-direction: column;
@@ -318,4 +327,4 @@ button:disabled {
 }
 
 .skin-option.skin-selected { border-color: gold; background: rgba(0, 100, 0, 0.8); }
-.skin-option:hover { border-color: #88dd88; background: rgba(0,80,0,0.5); }
+.skin-option:hover { border-color: forestgreen; background: rgba(0,80,0,0.5); }

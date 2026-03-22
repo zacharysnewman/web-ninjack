@@ -24,26 +24,23 @@ function showMainMenu() {
 		content.id = 'menu-content';
 		content.innerHTML = `
 			<h1 class="menu-title">Ninjack</h1>
+			<div id="menu-skin-preview">${NINJA}</div>
+			<div class="skin-dropdown-wrapper">
+				<span class="skin-label">Ninja Skin</span>
+				<div class="skin-dropdown-inner">
+					<div class="skin-dropdown-popup" id="skin-popup"></div>
+					<button class="skin-dropdown-btn" id="skin-dropdown-btn">${NINJA} ▾</button>
+				</div>
+			</div>
 			<button id="menu-start">Start</button>
 		`;
 		menu.appendChild(content);
-
-		// Skin dropdown — fixed bottom-right
-		const skinWrapper = document.createElement('div');
-		skinWrapper.className = 'skin-dropdown-wrapper';
-		skinWrapper.innerHTML = `
-			<span class="skin-label">Ninja Skin</span>
-			<div class="skin-dropdown-inner">
-				<div class="skin-dropdown-popup" id="skin-popup"></div>
-				<button class="skin-dropdown-btn" id="skin-dropdown-btn">${NINJA} ▾</button>
-			</div>
-		`;
-		menu.appendChild(skinWrapper);
 
 		document.body.appendChild(menu);
 
 		const popup = menu.querySelector('#skin-popup');
 		const dropdownBtn = menu.querySelector('#skin-dropdown-btn');
+		const skinPreview = menu.querySelector('#menu-skin-preview');
 		let popupOpen = false;
 
 		function closePopup() {
@@ -65,6 +62,7 @@ function showMainMenu() {
 				NINJA = skin;
 				localStorage.setItem(SKIN_KEY, skin);
 				dropdownBtn.textContent = skin + ' ▾';
+				skinPreview.textContent = skin;
 				popup.querySelectorAll('.skin-option').forEach(b =>
 					b.classList.toggle('skin-selected', b.textContent === skin)
 				);
@@ -85,8 +83,11 @@ function showMainMenu() {
 		document.addEventListener('click', () => { closePopup(); });
 
 		menu.querySelector('#menu-start').addEventListener('click', () => {
-			menu.remove();
-			resolve();
+			menu.style.opacity = '0';
+			menu.addEventListener('transitionend', () => {
+				menu.remove();
+				resolve();
+			}, { once: true });
 		});
 	});
 }
