@@ -39,19 +39,18 @@ async function main() {
 
 	const hasSave = !!localStorage.getItem(SAVE_KEY);
 	generateBackground();
-	await showMainMenu(hasSave);
 
-	if (hasSave) {
-		const loaded = await loadGame();
-		if (!loaded) {
+	let showWelcome = !hasSave;
+	await showMainMenu(hasSave, async () => {
+		if (hasSave) {
+			const loaded = await loadGame();
+			if (!loaded) { startNewGame(); showWelcome = true; }
+		} else {
 			startNewGame();
-			await showModal(alertMessages.welcome);
 		}
-	} else {
-		startNewGame();
-		await showModal(alertMessages.welcome);
-	}
+	});
 
+	if (showWelcome) await showModal(alertMessages.welcome);
 	state.buttonsDisabled = false;
 }
 

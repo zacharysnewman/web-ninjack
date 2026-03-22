@@ -1,7 +1,7 @@
 const SKIN_OPTIONS = ['🥷', '🥷🏻', '🥷🏼', '🥷🏽', '🥷🏾', '🥷🏿'];
 const SKIN_KEY = 'ninjaSkin';
 
-function showMainMenu(hasSave = false) {
+function showMainMenu(hasSave = false, onConfirm = () => {}) {
 	state.buttonsDisabled = true;
 	return new Promise(resolve => {
 		const menu = document.createElement('div');
@@ -70,7 +70,9 @@ function showMainMenu(hasSave = false) {
 
 		document.addEventListener('click', () => { closePopup(); });
 
-		menu.querySelector('#menu-start').addEventListener('click', () => {
+		menu.querySelector('#menu-start').addEventListener('click', async () => {
+			menu.querySelector('#menu-start').disabled = true;
+			await onConfirm();
 			menu.style.opacity = '0';
 			menu.addEventListener('transitionend', () => {
 				menu.remove();

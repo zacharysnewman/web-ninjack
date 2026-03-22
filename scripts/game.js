@@ -22,8 +22,7 @@ function handleDeath(x, y) {
 	setTimeout(async () => {
 		await showModal(alertMessages.death());
 		generateBackground();
-		await showMainMenu(false);
-		startNewGame();
+		await showMainMenu(false, () => startNewGame());
 		enableButtons();
 	}, 1000);
 }
@@ -42,8 +41,7 @@ function handleWin() {
 	setTimeout(async () => {
 		await showModal(alertMessages.win());
 		generateBackground();
-		await showMainMenu(false);
-		startNewGame();
+		await showMainMenu(false, () => startNewGame());
 		enableButtons();
 	}, 1000);
 }
