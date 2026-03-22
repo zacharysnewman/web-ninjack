@@ -37,14 +37,22 @@ async function main() {
 	});
 	document.addEventListener('keydown', onKeyDown);
 
-	// Pre-render a world so something is visible behind the menu blur
-	state.setPlayer(Math.floor(worldSize / 2), Math.floor(worldSize / 2));
-	setupLevel(0, 1, 1);
-
-	await showMainMenu();
-	if (!await loadGame()) {
-		await showModal(alertMessages.welcome);
+	// Pre-render world before menu — load save if available, otherwise generate a new game
+	const hasSave = await loadGame();
+	if (!hasSave) {
 		startNewGame();
+	}
+	timer.stop();
+
+	await showMainMenu(hasSave);
+	state.buttonsDisabled = false;
+
+	if (hasSave) {
+		timer.start();
+	} else {
+		timer.reset();
+		await showModal(alertMessages.welcome);
+		timer.start();
 	}
 }
 
