@@ -37,17 +37,21 @@ async function main() {
 	});
 	document.addEventListener('keydown', onKeyDown);
 
-	const hasSave = !!localStorage.getItem(SAVE_KEY);
+	const saveJson = localStorage.getItem(SAVE_KEY);
+	let saveLevel = null;
+	if (saveJson) {
+		try { saveLevel = JSON.parse(saveJson).currentLevel; } catch(e) {}
+	}
 	generateBackground();
 
-	const menuPromise = showMainMenu(hasSave, async () => {
-		if (hasSave) {
+	const menuPromise = showMainMenu(
+		saveLevel,
+		async () => {
 			const loaded = await loadGame();
 			if (!loaded) startNewGame();
-		} else {
-			startNewGame();
-		}
-	});
+		},
+		() => startNewGame()
+	);
 
 	await showModal(alertMessages.welcome);
 	await menuPromise;
