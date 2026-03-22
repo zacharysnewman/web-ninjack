@@ -1,11 +1,17 @@
 const SKIN_OPTIONS = ['🥷', '🥷🏻', '🥷🏼', '🥷🏽', '🥷🏾', '🥷🏿'];
 const SKIN_KEY = 'ninjaSkin';
 
-function showMainMenu(hasSave = false, onConfirm = () => {}) {
+function showMainMenu(saveLevel = null, onContinue = null, onNewGame = () => {}) {
 	state.buttonsDisabled = true;
 	return new Promise(resolve => {
 		const menu = document.createElement('div');
 		menu.id = 'main-menu';
+
+		const hasSave = saveLevel !== null && onContinue !== null;
+		const buttonsHtml = hasSave
+			? `<button id="menu-continue">Continue at Level ${saveLevel}</button>
+			   <button id="menu-new-game">New Game</button>`
+			: `<button id="menu-new-game">New Game</button>`;
 
 		// Centered content
 		const content = document.createElement('div');
@@ -20,7 +26,7 @@ function showMainMenu(hasSave = false, onConfirm = () => {}) {
 					<button class="skin-dropdown-btn" id="skin-dropdown-btn">${NINJA} ▾</button>
 				</div>
 			</div>
-			<button id="menu-start">${hasSave ? 'Continue' : 'Start'}</button>
+			${buttonsHtml}
 		`;
 		menu.appendChild(content);
 
@@ -70,14 +76,19 @@ function showMainMenu(hasSave = false, onConfirm = () => {}) {
 
 		document.addEventListener('click', () => { closePopup(); });
 
-		menu.querySelector('#menu-start').addEventListener('click', async () => {
-			menu.querySelector('#menu-start').disabled = true;
-			await onConfirm();
+		async function handleAction(callback) {
+			menu.querySelectorAll('#menu-continue, #menu-new-game').forEach(b => b.disabled = true);
+			await callback();
 			menu.style.opacity = '0';
 			menu.addEventListener('transitionend', () => {
 				menu.remove();
 				resolve();
 			}, { once: true });
-		});
+		}
+
+		if (hasSave) {
+			menu.querySelector('#menu-continue').addEventListener('click', () => handleAction(onContinue));
+		}
+		menu.querySelector('#menu-new-game').addEventListener('click', () => handleAction(onNewGame));
 	});
 }
