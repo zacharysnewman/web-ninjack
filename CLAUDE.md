@@ -11,6 +11,6 @@ After modifying any asset, increment its version query parameter in `index.html`
 
 **Current versions:**
 - `app.js`: v11
-- `styles.css`: v6
+- `styles.css`: v7
 
 Bump the version every time you make changes to the file, even minor ones.
