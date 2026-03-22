@@ -36,8 +36,14 @@ async function main() {
 		event.preventDefault();
 	});
 	document.addEventListener('keydown', onKeyDown);
+
+	// Pre-render a world so something is visible behind the menu blur
+	state.setPlayer(Math.floor(worldSize / 2), Math.floor(worldSize / 2));
+	setupLevel(0, 1, 1);
+
 	await showMainMenu();
 	if (!await loadGame()) {
+		await showModal(alertMessages.welcome);
 		startNewGame();
 	}
 }
