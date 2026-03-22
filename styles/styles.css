@@ -229,7 +229,8 @@ button:disabled {
 	line-height: 1;
 }
 
-#menu-start {
+#menu-continue,
+#menu-new-game {
 	font-size: clamp(1.2rem, 5vmin, 2rem);
 	padding: 0.55em 2.2em;
 	background: #4caf50;
@@ -243,12 +244,14 @@ button:disabled {
 	touch-action: manipulation;
 }
 
-#menu-start:hover {
+#menu-continue:hover,
+#menu-new-game:hover {
 	background: #66bb6a;
 	transform: scale(1.06);
 	box-shadow: 0 6px 18px rgba(0,0,0,0.45);
 }
-#menu-start:active { transform: scale(0.97); }
+#menu-continue:active,
+#menu-new-game:active { transform: scale(0.97); }
 
 /* ── Skin Dropdown ── */
 .skin-dropdown-wrapper {
