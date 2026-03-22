@@ -49,7 +49,7 @@ async function main() {
 		}
 	});
 
-	if (!hasSave) await showModal(alertMessages.welcome);
+	await showModal(alertMessages.welcome);
 	await menuPromise;
 	state.buttonsDisabled = false;
 }
