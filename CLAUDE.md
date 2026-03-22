@@ -30,7 +30,7 @@ After modifying any asset, increment its version query parameter in `index.html`
 - `snake.js`: v3
 - `save.js`: v9
 - `game.js`: v10
-- `player.js`: v7
+- `player.js`: v8
 - `menu.js`: v11
 - `main.js`: v12
 - `styles.css`: v12

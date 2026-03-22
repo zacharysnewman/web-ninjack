@@ -63,8 +63,7 @@ function interactWithDoor(newX, newY) {
 		} else {
 			notify(LOCK, getTileElement(newX, newY));
 		}
-		saveGame();
-		return true;
+		return false;
 	}
 
 	notify(DOOR, getTileElement(newX, newY));
@@ -134,22 +133,14 @@ function move(direction) {
 		return;
 	}
 
-	if (tileValue === TREE || tileValue === ROCK) {
-		interactWithVegetation(newX, newY);
-		moveSnakes();
-		if (state.currentHealth > 0) saveGame();
-		return;
-	}
-
 	if (tileValue === DOOR) {
-		interactWithDoor(newX, newY);
-		return;
+		if (interactWithDoor(newX, newY)) return;
+	} else if (tileValue === TREE || tileValue === ROCK) {
+		interactWithVegetation(newX, newY);
+	} else {
+		if (!interactWithOpenTile(newX, newY)) movePlayerTo(newX, newY);
 	}
 
-	const didEarlyReturn = interactWithOpenTile(newX, newY);
-	if (didEarlyReturn) return;
-
-	movePlayerTo(newX, newY);
 	moveSnakes();
 	if (state.currentHealth > 0) saveGame();
 }
