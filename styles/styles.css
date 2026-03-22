@@ -184,12 +184,13 @@ button:disabled {
 	inset: 0;
 	z-index: 100;
 	overflow: hidden;
+	background-color: #1a3a1a;
 }
 
 #menu-tree-bg {
 	position: absolute;
 	inset: 0;
-	font-size: 4.5vmin;
+	font-size: 6.75vmin;
 	line-height: 1.15;
 	word-break: break-all;
 	overflow: hidden;
@@ -222,13 +223,6 @@ button:disabled {
 	color: #d4ffd4;
 	text-shadow: 3px 3px 0 #003300, 0 0 24px rgba(0,255,0,0.35);
 	letter-spacing: 0.06em;
-}
-
-#menu-ninja-preview {
-	font-size: clamp(5rem, 20vmin, 13rem);
-	line-height: 1;
-	user-select: none;
-	filter: drop-shadow(0 4px 16px rgba(0,0,0,0.7));
 }
 
 #menu-start {

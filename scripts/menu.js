@@ -22,9 +22,8 @@ function showMainMenu() {
 		const content = document.createElement('div');
 		content.id = 'menu-content';
 		content.innerHTML = `
-			<h1 class="menu-title">🥷 NINJACK</h1>
-			<div id="menu-ninja-preview">${NINJA}</div>
-			<button id="menu-start">▶ &nbsp;Start</button>
+			<h1 class="menu-title">Ninjack</h1>
+			<button id="menu-start">Start</button>
 		`;
 		menu.appendChild(content);
 
@@ -64,7 +63,6 @@ function showMainMenu() {
 				e.stopPropagation();
 				NINJA = skin;
 				localStorage.setItem(SKIN_KEY, skin);
-				menu.querySelector('#menu-ninja-preview').textContent = skin;
 				dropdownBtn.textContent = skin + ' ▾';
 				popup.querySelectorAll('.skin-option').forEach(b =>
 					b.classList.toggle('skin-selected', b.textContent === skin)
