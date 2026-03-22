@@ -40,17 +40,17 @@ async function main() {
 	const hasSave = !!localStorage.getItem(SAVE_KEY);
 	generateBackground();
 
-	let showWelcome = !hasSave;
-	await showMainMenu(hasSave, async () => {
+	const menuPromise = showMainMenu(hasSave, async () => {
 		if (hasSave) {
 			const loaded = await loadGame();
-			if (!loaded) { startNewGame(); showWelcome = true; }
+			if (!loaded) startNewGame();
 		} else {
 			startNewGame();
 		}
 	});
 
-	if (showWelcome) await showModal(alertMessages.welcome);
+	if (!hasSave) await showModal(alertMessages.welcome);
+	await menuPromise;
 	state.buttonsDisabled = false;
 }
 
