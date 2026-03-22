@@ -22,7 +22,7 @@ function handleDeath(x, y) {
 	setTimeout(async () => {
 		await showModal(alertMessages.death());
 		generateBackground();
-		await showMainMenu(false, () => startNewGame());
+		await showMainMenu(null, null, () => startNewGame());
 		enableButtons();
 	}, 1000);
 }
@@ -36,12 +36,13 @@ function handleFinalBoss() {
 }
 
 function handleWin() {
+	clearSave();
 	timer.stop();
 	disableButtons();
 	setTimeout(async () => {
 		await showModal(alertMessages.win());
 		generateBackground();
-		await showMainMenu(false, () => startNewGame());
+		await showMainMenu(null, null, () => startNewGame());
 		enableButtons();
 	}, 1000);
 }

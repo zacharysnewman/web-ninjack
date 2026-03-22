@@ -40,7 +40,10 @@ async function main() {
 	const saveJson = localStorage.getItem(SAVE_KEY);
 	let saveLevel = null;
 	if (saveJson) {
-		try { saveLevel = JSON.parse(saveJson).currentLevel; } catch(e) {}
+		try {
+			saveLevel = JSON.parse(saveJson).currentLevel;
+			if (typeof saveLevel !== 'number' || saveLevel < 1) saveLevel = null;
+		} catch(e) {}
 	}
 	generateBackground();
 
@@ -55,7 +58,7 @@ async function main() {
 
 	await showModal(alertMessages.welcome);
 	await menuPromise;
-	state.buttonsDisabled = false;
+	state.setButtonsDisabled(false);
 }
 
 main();

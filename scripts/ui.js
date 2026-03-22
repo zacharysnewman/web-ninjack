@@ -53,10 +53,10 @@ async function showModal(bodyText) {
 	document.body.appendChild(modal);
 
 	return new Promise((resolve) => {
-		modal.querySelector('#modal-ok').onclick = () => {
-			document.body.removeChild(modal);
+		modal.querySelector('#modal-ok').addEventListener('click', () => {
+			modal.remove();
 			resolve(true);
-		};
+		});
 	});
 }
 

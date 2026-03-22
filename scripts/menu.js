@@ -2,7 +2,7 @@ const SKIN_OPTIONS = ['🥷', '🥷🏻', '🥷🏼', '🥷🏽', '🥷🏾', '�
 const SKIN_KEY = 'ninjaSkin';
 
 function showMainMenu(saveLevel = null, onContinue = null, onNewGame = () => {}) {
-	state.buttonsDisabled = true;
+	state.setButtonsDisabled(true);
 	return new Promise(resolve => {
 		const menu = document.createElement('div');
 		menu.id = 'main-menu';
@@ -20,7 +20,7 @@ function showMainMenu(saveLevel = null, onContinue = null, onNewGame = () => {})
 			<h1 class="menu-title">Ninjack</h1>
 			<div id="menu-skin-preview">${NINJA}</div>
 			<div class="skin-dropdown-wrapper">
-				<span class="skin-label">Ninja Skin</span>
+				<span class="skin-label">Ninja</span>
 				<div class="skin-dropdown-inner">
 					<div class="skin-dropdown-popup" id="skin-popup"></div>
 					<button class="skin-dropdown-btn" id="skin-dropdown-btn">${NINJA} ▾</button>

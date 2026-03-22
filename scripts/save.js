@@ -1,12 +1,15 @@
 const SAVE_KEY = 'ninjack_save';
 const SAVE_HASH_KEY = 'ninjack_save_hash';
 
+let _saveGeneration = 0;
+
 async function hashString(str) {
 	const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
 	return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 async function saveGame() {
+	const generation = ++_saveGeneration;
 	const saveData = {
 		playerX: state.playerX, playerY: state.playerY,
 		currentHealth: state.currentHealth, currentLevel: state.currentLevel,
@@ -23,11 +26,13 @@ async function saveGame() {
 	};
 	const json = JSON.stringify(saveData);
 	const hash = await hashString(json);
+	if (generation !== _saveGeneration) return;
 	localStorage.setItem(SAVE_KEY, json);
 	localStorage.setItem(SAVE_HASH_KEY, hash);
 }
 
 function clearSave() {
+	_saveGeneration++;
 	localStorage.removeItem(SAVE_KEY);
 	localStorage.removeItem(SAVE_HASH_KEY);
 }
