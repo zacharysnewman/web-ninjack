@@ -7,18 +7,6 @@ function showMainMenu() {
 		const menu = document.createElement('div');
 		menu.id = 'main-menu';
 
-		// Tiled tree background
-		const treeBg = document.createElement('div');
-		treeBg.id = 'menu-tree-bg';
-		treeBg.setAttribute('aria-hidden', 'true');
-		treeBg.textContent = '🌲'.repeat(600);
-		menu.appendChild(treeBg);
-
-		// Dark overlay
-		const overlay = document.createElement('div');
-		overlay.id = 'menu-overlay';
-		menu.appendChild(overlay);
-
 		// Centered content
 		const content = document.createElement('div');
 		content.id = 'menu-content';
