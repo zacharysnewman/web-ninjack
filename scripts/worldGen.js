@@ -62,6 +62,7 @@ function generateBackground() {
 			world.appendChild(tile);
 		}
 	}
+	updateGoldDisplay();
 }
 
 function generateWorld() {
