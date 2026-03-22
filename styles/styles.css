@@ -178,91 +178,150 @@ button:disabled {
   transform: scale(0.95); /* Shrink slightly for pressed effect */
 }
 
-/* Main Menu */
+/* ── Main Menu ── */
 #main-menu {
 	position: fixed;
 	inset: 0;
 	z-index: 100;
-	background-color: #1a4a1a;
+	overflow: hidden;
+}
+
+#menu-tree-bg {
+	position: absolute;
+	inset: 0;
+	font-size: 4.5vmin;
+	line-height: 1.15;
+	word-break: break-all;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 0;
+}
+
+#menu-overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 20, 0, 0.55);
+	z-index: 1;
+	pointer-events: none;
+}
+
+#menu-content {
+	position: relative;
+	z-index: 2;
+	height: 100%;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 1em;
+	gap: 1.2em;
 }
 
 .menu-title {
-	font-size: clamp(3rem, 12vmin, 7rem);
+	font-size: clamp(2.8rem, 11vmin, 6.5rem);
 	margin: 0;
+	color: #d4ffd4;
+	text-shadow: 3px 3px 0 #003300, 0 0 24px rgba(0,255,0,0.35);
+	letter-spacing: 0.06em;
 }
 
-#menu-ninja-bg {
-	font-size: clamp(6rem, 25vmin, 16rem);
+#menu-ninja-preview {
+	font-size: clamp(5rem, 20vmin, 13rem);
 	line-height: 1;
 	user-select: none;
+	filter: drop-shadow(0 4px 16px rgba(0,0,0,0.7));
 }
 
 #menu-start {
 	font-size: clamp(1.2rem, 5vmin, 2rem);
-	padding: 0.5em 2em;
-	background-color: darkgreen;
-	color: white;
-	border: 2px solid darkgrey;
-	border-radius: 12px;
+	padding: 0.55em 2.2em;
+	background: linear-gradient(160deg, #1a6b1a, #0e420e);
+	color: #d4ffd4;
+	border: 2px solid #4aaa4a;
+	border-radius: 14px;
 	cursor: pointer;
 	font-family: Arial, sans-serif;
 	font-weight: bold;
+	letter-spacing: 0.05em;
+	box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
 	touch-action: manipulation;
 }
 
-#menu-start:hover { background-color: #005500; transform: scale(1.05); }
+#menu-start:hover {
+	background: linear-gradient(160deg, #227722, #134813);
+	border-color: #88dd88;
+	transform: scale(1.06);
+	box-shadow: 0 6px 22px rgba(0,0,0,0.55), 0 0 14px rgba(80,200,80,0.3);
+}
 #menu-start:active { transform: scale(0.97); }
 
-/* Skin Dropdown */
+/* ── Skin Dropdown ── */
 .skin-dropdown-wrapper {
 	position: fixed;
 	bottom: 16px;
 	right: 16px;
+	z-index: 3;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 4px;
+}
+
+.skin-label {
+	font-size: 0.75rem;
+	color: #88cc88;
+	font-family: Arial, sans-serif;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.skin-dropdown-inner {
+	position: relative;
 }
 
 .skin-dropdown-btn {
-	font-size: clamp(1.5rem, 6vmin, 2.2rem);
-	background: rgba(0, 80, 0, 0.85);
-	border: 2px solid darkgrey;
-	border-radius: 8px;
+	font-size: clamp(1.4rem, 5.5vmin, 2rem);
+	background: rgba(10, 60, 10, 0.9);
+	border: 2px solid #4aaa4a;
+	border-radius: 10px;
 	cursor: pointer;
-	padding: 6px 10px;
+	padding: 6px 12px;
 	touch-action: manipulation;
 	line-height: 1;
+	color: white;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 
-.skin-dropdown-btn:hover { border-color: white; }
+.skin-dropdown-btn:hover { border-color: #88dd88; }
 
 .skin-dropdown-popup {
+	display: none;
 	position: absolute;
 	bottom: calc(100% + 8px);
 	right: 0;
-	background: #1a4a1a;
-	border: 2px solid darkgrey;
-	border-radius: 10px;
+	background: rgba(10, 50, 10, 0.97);
+	border: 2px solid #4aaa4a;
+	border-radius: 12px;
 	padding: 6px;
-	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	z-index: 101;
+	box-shadow: 0 4px 18px rgba(0,0,0,0.6);
+}
+
+.skin-dropdown-popup.open {
+	display: flex;
 }
 
 .skin-option {
-	font-size: clamp(1.5rem, 6vmin, 2.2rem);
+	font-size: clamp(1.4rem, 5.5vmin, 2rem);
 	background: transparent;
 	border: 2px solid transparent;
-	border-radius: 6px;
+	border-radius: 8px;
 	cursor: pointer;
-	padding: 4px 8px;
+	padding: 4px 10px;
 	touch-action: manipulation;
 	line-height: 1;
 	text-align: left;
 }
 
-.skin-option.skin-selected { border-color: gold; background: rgba(0, 120, 0, 0.9); }
-.skin-option:hover { border-color: white; }
+.skin-option.skin-selected { border-color: gold; background: rgba(0, 100, 0, 0.8); }
+.skin-option:hover { border-color: #88dd88; background: rgba(0,80,0,0.5); }
