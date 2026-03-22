@@ -10,6 +10,7 @@ function showMainMenu() {
 		// Tiled tree background
 		const treeBg = document.createElement('div');
 		treeBg.id = 'menu-tree-bg';
+		treeBg.setAttribute('aria-hidden', 'true');
 		treeBg.textContent = '🌲'.repeat(600);
 		menu.appendChild(treeBg);
 
