@@ -164,25 +164,28 @@ button:disabled {
 }
 
 .modal-button {
-  background: #007bff; /* Vibrant blue background */
-  color: white; /* White text for contrast */
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
+  background: #4caf50;
+  color: #1b5e20;
+  border: 2px solid forestgreen;
+  padding: 0.55em 2.2em;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: bold; /* Makes the text stand out */
-  transition: background 0.3s ease, transform 0.2s ease; /* Smooth hover effect */
+  font-size: 1.1rem;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  touch-action: manipulation;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .modal-button:hover {
-  background: #0056b3; /* Slightly darker blue on hover */
-  transform: scale(1.05); /* Slightly enlarge button for emphasis */
+  background: #66bb6a;
+  transform: scale(1.06);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
 }
 
 .modal-button:active {
-  background: #004085; /* Darkest blue for active state */
-  transform: scale(0.95); /* Shrink slightly for pressed effect */
+  transform: scale(0.97);
 }
 
 /* ── Main Menu ── */
