@@ -190,28 +190,11 @@ button:disabled {
 	inset: 0;
 	z-index: 100;
 	overflow: hidden;
-	background: radial-gradient(ellipse at center, #2e7d32 0%, #1a3a1a 70%, #0d1f0d 100%);
+	background: rgba(10, 40, 10, 0.75);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
 	opacity: 1;
 	transition: opacity 0.5s ease;
-}
-
-#menu-tree-bg {
-	position: absolute;
-	inset: 0;
-	font-size: 6.75vmin;
-	line-height: 1.15;
-	word-break: break-all;
-	overflow: hidden;
-	pointer-events: none;
-	z-index: 0;
-}
-
-#menu-overlay {
-	position: absolute;
-	inset: 0;
-	background: rgba(0, 20, 0, 0.45);
-	z-index: 1;
-	pointer-events: none;
 }
 
 #menu-content {
