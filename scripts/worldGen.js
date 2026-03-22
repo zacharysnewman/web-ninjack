@@ -43,6 +43,27 @@ function generateLootTable(chuteCount, doorCount, keyCount) {
 	]), ...chuteDrop];
 }
 
+function generateBackground() {
+	const world = document.getElementById('world');
+	world.innerHTML = '';
+	const tiles = fisherYatesShuffle([
+		...Array(rockCount).fill(ROCK),
+		...Array(treeCount).fill(TREE),
+		...Array(holeCount).fill(HOLE),
+		...Array(playerCount).fill(''),
+	]);
+	for (let y = 0; y < worldSize; y++) {
+		for (let x = 0; x < worldSize; x++) {
+			const tile = document.createElement('div');
+			tile.className = 'tile p' + x + '-' + y;
+			const value = tiles[y * worldSize + x];
+			tile.textContent = value;
+			if (value) tile.classList.add(value);
+			world.appendChild(tile);
+		}
+	}
+}
+
 function generateWorld() {
 	state.clearRocks();
 	state.resetGrid();

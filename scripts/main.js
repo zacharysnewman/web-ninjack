@@ -37,15 +37,22 @@ async function main() {
 	});
 	document.addEventListener('keydown', onKeyDown);
 
-	// Pre-render a world so something is visible behind the menu blur
-	state.setPlayer(Math.floor(worldSize / 2), Math.floor(worldSize / 2));
-	setupLevel(0, 1, 1);
+	const hasSave = !!localStorage.getItem(SAVE_KEY);
+	generateBackground();
+	await showMainMenu(hasSave);
 
-	await showMainMenu();
-	if (!await loadGame()) {
-		await showModal(alertMessages.welcome);
+	if (hasSave) {
+		const loaded = await loadGame();
+		if (!loaded) {
+			startNewGame();
+			await showModal(alertMessages.welcome);
+		}
+	} else {
 		startNewGame();
+		await showModal(alertMessages.welcome);
 	}
+
+	state.buttonsDisabled = false;
 }
 
 main();

@@ -1,7 +1,7 @@
 const SKIN_OPTIONS = ['🥷', '🥷🏻', '🥷🏼', '🥷🏽', '🥷🏾', '🥷🏿'];
 const SKIN_KEY = 'ninjaSkin';
 
-function showMainMenu() {
+function showMainMenu(hasSave = false) {
 	state.buttonsDisabled = true;
 	return new Promise(resolve => {
 		const menu = document.createElement('div');
@@ -20,7 +20,7 @@ function showMainMenu() {
 					<button class="skin-dropdown-btn" id="skin-dropdown-btn">${NINJA} ▾</button>
 				</div>
 			</div>
-			<button id="menu-start">Start</button>
+			<button id="menu-start">${hasSave ? 'Continue' : 'Start'}</button>
 		`;
 		menu.appendChild(content);
 
