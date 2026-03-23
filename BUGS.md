@@ -19,6 +19,14 @@ When the player picks up the chute on level 10 (or 10+), `handleFinalBoss()` in 
 - `scripts/state.js` — no `removeRock()` method exists
 - `scripts/player.js` — `interactWithVegetation()` does not update `state.rocks`
 
+**Open Question:**
+`handleFinalBoss()` is triggered by collecting the chute (`interactWithOpenTile` → `handleFinalBoss()`). On level 10+ there is no chute, so `handleFinalBoss()` is **never called** on 10+. Yet `handleFinalBoss()` already has an NG+ branch (`game.js:33–45`) that spawns a mix of crabs and snakes from rocks. This branch is currently unreachable dead code.
+
+**Decision needed: does level 10+ have a final boss sequence, and if so, what triggers it?** Options:
+- No final boss on 10+ — remove the NG+ branch from `handleFinalBoss()` entirely.
+- Final boss is triggered by collecting the house key instead of the chute — call `handleFinalBoss()` from the house-key collect path.
+- Some other trigger.
+
 ---
 
 ## Notify: Multi-Icon Notifications Stack Vertically Instead of Side by Side
@@ -46,6 +54,9 @@ Two separate issues:
 - `scripts/game.js` — `handleDamage()` should scale the icon count to the damage amount
 - `scripts/player.js` — `collectItem()` call for `DBL_SWORD` already passes `SWORD + SWORD` (correct intent, wrong rendering)
 
+**Implementation Note:**
+`white-space: nowrap` alone will not fix the stacking. `notify()` sets `emojiElement.style.width = rect.width` (one tile width), so the multi-character string still overflows that fixed width. The element's width must also be changed to `auto` (or `max-content`) so it expands to fit the content; the centering math (`x = rect.left + rect.width / 2 - emojiRect.width / 2`) already handles variable widths correctly after the `getBoundingClientRect()` call.
+
 ---
 
 ## Scorpion Emoji Should Be Crab (🦀)
@@ -65,6 +76,9 @@ The enemy currently displayed as 🦂 (scorpion) should be displayed as 🦀 (cr
 - `scripts/state.js` — `scorpionsCount`, `scorpions` fields and methods
 - `scripts/save.js` — scorpion save/load logic
 
+**Save Compatibility Note:**
+`save.js` persists `gridState` as raw emoji strings and restores crabs via `value === SCORPION` in `restoreWorld()`. After renaming `SCORPION = "🦂"` to `CRAB = "🦀"`, any saved game with `"🦂"` in the grid will not be recognised as a crab on load — the check becomes `value === "🦀"`. **Existing saves will silently break.** Decision needed: invalidate old saves on load (simplest) or add a migration pass that replaces `"🦂"` with `"🦀"` in the loaded `gridState`.
+
 ---
 
 ## NG+ Trees Should Use Deciduous Emoji (🌳)
@@ -80,6 +94,11 @@ In New Game+, trees should display as 🌳 instead of 🌲 to visually distingui
 - `scripts/worldGen.js` — `generateTileTable()`, `generateWorld()`
 - `scripts/player.js` — `interactWithVegetation()`, `handleMove()`
 - `scripts/snake.js` — `canSnakeMoveToTile()`, `canScorpionMoveToTile()`
+
+**Save Compatibility Note:**
+`save.js` stores and restores the raw `gridState` emoji grid. An NG+ save made before this change will have `"🌲"` for every tree. On load, `setGridTile` renders it correctly visually, but interaction code will check `tileValue === TREE_NG` (`"🌳"`) and miss those tiles — they'll behave as open ground instead of trees. Decision needed: invalidate NG+ saves or add a migration pass replacing `"🌲"` → `"🌳"` in loaded NG+ `gridState`.
+
+**move() reference:** The bug lists `handleMove()` but the actual function in `player.js` is `move()`. Confirm the function name when implementing.
 
 ---
 
@@ -101,11 +120,16 @@ In New Game+, the second hole should be replaced by a house tile 🏡. The house
 **Affected Files:**
 - `scripts/constants.js` — add `HOUSE = "🏡"`, `HOUSE_KEY = "🗝️"`
 - `scripts/worldGen.js` — `generateTileTable()`, `generateWorld()` (place 1 hole + 1 house in NG+)
-- `scripts/player.js` — add `interactWithHouse()` handler; update `handleMove()` to dispatch on `HOUSE`; add house-key collect path; one crab on level 10+ drops `HOUSE_KEY` on death instead of its normal drop
+- `scripts/player.js` — add `interactWithHouse()` handler; update `move()` to dispatch on `HOUSE`; add house-key collect path; one crab on level 10+ drops `HOUSE_KEY` on death instead of its normal drop
 - `scripts/snake.js` — add `HOUSE` to blocked tiles in `canSnakeMoveToTile()` and `canScorpionMoveToTile()`
-- `scripts/state.js` — track house-locked state and house-key inventory
+- `scripts/state.js` — track house-locked state (`houseLocked`) and house-key count (`houseKeys`)
 - `scripts/ui.js` — show house key in inventory when held
-- `scripts/save.js` — persist house-locked state and house-key count
+- `scripts/save.js` — persist `houseLocked` and `houseKeys`
+
+**Implementation Notes:**
+- The house must be placed **visibly** from the start (like the hole), not hidden inside a tree or rock. It should go through the same `pickHolePositions` mechanism: call `pickHolePositions(2)` and assign one position to the hole and one to the house, both excluded from the tile table via `holeSet`.
+- **Open question: does the house have a visual locked/unlocked state?** The constants `LOCK = "🔒"` and `UNLOCK = "🔐"` already exist. Options: keep the tile as `🏡` always and rely on the "can't enter" logic, or swap to a different tile when unlocked. Decision needed.
+- `save.js` currently saves `scorpions` without a `fromRock` field (see Crabs bug). `houseLocked` and `houseKeys` also need to be added to the save payload once those fields exist on `state`.
 
 ---
 
@@ -142,6 +166,9 @@ In New Game+, the number of crabs (currently scorpions) and snakes hidden in **t
 - `scripts/worldGen.js` — `generateLootTable()`, `generateRockLootTable()`, `generateSnakeLootTable()`
 - `scripts/state.js` — `snakesCount` / `scorpionsCount` initialisation and increment logic
 
+**Clarification — Rock Loot Scope:**
+"Same as normal mode" for rock loot applies to NG+ levels **1+–9+ only**. On level 10+, all rocks produce crabs (handled by the Crabs Loot Pool bug). `generateRockLootTable()` will need a `state.ngPlus && state.currentLevel === 9` branch for the all-crabs case; this bug's revert covers the 1+–9+ path only.
+
 ---
 
 ## Crabs Should Have a Separate Loot Pool and Rock-vs-Tree Spawn Tracking
@@ -173,11 +200,16 @@ A `rockCrabKeyPending` boolean was considered but ruled out. Level 10+ has 10 tr
 
 **Affected Files:**
 - `scripts/constants.js` — add `RING = "💍"`
-- `scripts/worldGen.js` — add `generateCrabLootTable()`; call it alongside `generateSnakeLootTable()`
-- `scripts/state.js` — add crab loot table fields and draw methods; store spawn origin on scorpion entries
+- `scripts/worldGen.js` — add `generateCrabLootTable()`; call it alongside `generateSnakeLootTable()`; add `generateRockCrabLootTable()` for level 10+ (all crabs, one slot is `HOUSE_KEY`)
+- `scripts/state.js` — add crab loot table fields and draw methods; store `fromRock` on scorpion entries; add `rockCrabLootTable` fields for level 10+
 - `scripts/snake.js` — `addScorpion()` accepts and stores `fromRock` flag
 - `scripts/player.js` — `interactWithVegetation()` passes origin; crab-kill path draws from correct pool; `interactWithOpenTile()` handles `RING`
-- `scripts/save.js` — persist crab loot state
+- `scripts/save.js` — persist `crabLootTable`/index and `rockCrabLootTable`/index; add `fromRock` to saved scorpion entries (currently only `{ x, y, armored }` is saved — `save.js:28`)
+
+**Open Questions:**
+- **Exact crab loot table composition:** "proportioned similarly to the snake table" is not specific enough to implement. The snake table uses 2 hearts out of the total enemy count. What is the RING : HEART ratio for the crab table? A concrete count is needed.
+- **Rock-crab loot pool on levels other than 10+:** On NG+ levels 1+–9+, rocks drop snakes (same as normal), so there are no rock-crabs and no separate pool needed. On level 10+, the rock-crab pool is `rockCrabLootTable` (15 entries: 14 normal crab drops + 1 `HOUSE_KEY`). Confirm this is the only level where a separate pool is needed.
+- **`setupLevel()` call site:** `setupLevel()` must call `state.setRockCrabLootTable(generateRockCrabLootTable())` on level 10+ only. This should be gated on `state.ngPlus && state.currentLevel === 9` (checked before `incrementLevel()` runs).
 
 ---
 
@@ -214,6 +246,9 @@ setupLevel(chuteCount, doorCount, keyCount);
 **Affected Files:**
 - `scripts/game.js` — `advanceLevel()`
 
+**Implementation Note:**
+Since `handleFinalBoss()` is never called on level 10+ (no chute to trigger it), the NG+ branch inside `handleFinalBoss()` becomes unreachable after this change. See the open question in the Final Boss bug about whether a final boss sequence should exist on 10+ and what triggers it.
+
 ---
 
 ## House Key Should Appear in the Inventory UI
@@ -248,3 +283,6 @@ const dynamicText = state.currentChutes > 0
 **Affected Files:**
 - `scripts/ui.js` — `updateGoldDisplay()`
 - `scripts/state.js` — depends on `houseKeys` field being added (see NG+ House bug)
+
+**Open Question:**
+On level 10+ before the house key is collected, `state.houseKeys === 0` and `state.currentKeys === 0`, so the proposed ternary falls through to ` 🔑0`. Should the slot show `🔑0` (no key) or be blank on a level where a regular key is impossible? If blank is preferred, the ternary needs an additional guard: `state.currentKeys > 0 ? \` 🔑${state.currentKeys}\` : \`\``.
