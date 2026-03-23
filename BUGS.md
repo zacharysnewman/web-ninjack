@@ -11,13 +11,13 @@ The trigger differs by mode:
 
 **Level 10+ Boss Sequence (new design):**
 1. Player collects 🗝️ from a tree (the final tree loot slot on level 10+, replacing the chute).
-2. The house tile changes from 🏡 → 🏚️ (`HOUSE_DAMAGED`) with a ⚡️ notify on the house tile. The house is now non-interactive (treated as a blocked wall tile).
+2. The house tile changes from 🏠 → 🏚️ (`HOUSE_DAMAGED`) with a ⚡️ notify on the house tile. The house is now non-interactive (treated as a blocked wall tile).
 3. All remaining rocks burst open: `(remaining rocks - 1)` crabs (🦀) + 1 scorpion boss (🦂), randomly assigned among rock positions.
 4. **Player kills the scorpion boss:**
    - All remaining crabs and snakes on the board are instantly removed (no loot awarded; use `state.removeCrab/removeSnake` directly, bypassing the player-kill loot path).
-   - The house tile changes from 🏚️ → 🏡 with another ⚡️ notify on the house tile.
+   - The house tile changes from 🏚️ → 🏠 with another ⚡️ notify on the house tile.
    - The house is now unlockable.
-5. Player walks into 🏡 while holding the house key → `handleWin()`.
+5. Player walks into 🏠 while holding the house key → `handleWin()`.
 
 **Steps to Reproduce (stale rocks bug):**
 1. Reach level 10 normal (or level 10+).
@@ -114,10 +114,10 @@ In New Game+, trees should display as 🌳 instead of 🌲 to visually distingui
 
 ---
 
-## NG+ Should Have 1 Hole + 1 House (🏡) Instead of 2 Holes
+## NG+ Should Have 1 Hole + 1 House (🏠) Instead of 2 Holes
 
 **Description:**
-In New Game+, the second hole should be replaced by a house tile 🏡. The house acts like a locked door — the player cannot enter it until they hold the house key 🗝️. The house key is only available on Level 10+ and is the **final tree loot slot** (replacing the chute). On all other NG+ levels (1+–9+) the house is present but the key never appears, so it cannot be entered.
+In New Game+, the second hole should be replaced by a house tile 🏠. The house acts like a locked door — the player cannot enter it until they hold the house key 🗝️. The house key is only available on Level 10+ and is the **final tree loot slot** (replacing the chute). On all other NG+ levels (1+–9+) the house is present but the key never appears, so it cannot be entered.
 
 **Details:**
 - Normal NG+ levels (1+–9+): world has 1 hole + 1 house; house key does not appear in loot → house is permanently locked that run.
@@ -128,16 +128,16 @@ In New Game+, the second hole should be replaced by a house tile 🏡. The house
 
 **House Visual States:**
 The house tile uses two emoji constants:
-- `HOUSE` (🏡) — used in **all** accessible states: initially locked, and again after the boss is defeated (unlockable). The tile never changes emoji to reflect locked vs unlocked; `interactWithHouse()` checks `state.houseLocked` at walk-in time: if locked, shows a notify and does nothing; if unlocked, calls `handleWin()`.
+- `HOUSE` (🏠) — used in **all** accessible states: initially locked, and again after the boss is defeated (unlockable). The tile never changes emoji to reflect locked vs unlocked; `interactWithHouse()` checks `state.houseLocked` at walk-in time: if locked, shows a notify and does nothing; if unlocked, calls `handleWin()`.
 - `HOUSE_DAMAGED` (🏚️) — used **only during the boss fight** (set when the house key is collected from a tree). Non-interactive: `move()` treats it as a blocked tile; the player cannot move onto it at all.
 
-The transition back from 🏚️ → 🏡 happens when the scorpion boss is killed, accompanied by a ⚡️ notify. At that point `state.houseLocked` is also set to `false`.
+The transition back from 🏚️ → 🏠 happens when the scorpion boss is killed, accompanied by a ⚡️ notify. At that point `state.houseLocked` is also set to `false`.
 
 **Root Cause:**
 `worldGen.js:22` and `worldGen.js:123` use `holeCount = state.ngPlus ? 2 : 1`, placing two `HOLE` tiles. There is no `HOUSE` / `HOUSE_DAMAGED` constant, no house-placement logic, no house-key constant, no house interaction handler, and no tree-loot slot for the house key on level 10+.
 
 **Affected Files:**
-- `scripts/constants.js` — add `HOUSE = "🏡"`, `HOUSE_DAMAGED = "🏚️"`, `HOUSE_KEY = "🗝️"`
+- `scripts/constants.js` — add `HOUSE = "🏠"`, `HOUSE_DAMAGED = "🏚️"`, `HOUSE_KEY = "🗝️"`
 - `scripts/worldGen.js` — `generateTileTable()`, `generateWorld()` (place 1 hole + 1 house via `pickHolePositions(2)`); `generateLootTable()` places `HOUSE_KEY` as the last slot on level 10+ (instead of `CHUTE`)
 - `scripts/player.js` — add `interactWithHouse()` handler; `move()` dispatches on `HOUSE` (calls `interactWithHouse()`) and treats `HOUSE_DAMAGED` as impassable; collecting `HOUSE_KEY` from a tree calls `handleFinalBoss()`
 - `scripts/snake.js` — add `HOUSE` and `HOUSE_DAMAGED` to blocked tiles in `canSnakeMoveToTile()` and `canCrabMoveToTile()`
@@ -224,7 +224,7 @@ Crabs currently share `snakeLootTable` with snakes — both call `state.drawSnak
 ## Level 10+ Should Have No Key, No Parachute, and a Lethal Hole
 
 **Description:**
-On level 10+ (NG+ final level), the normal key (🔑) and parachute (🪂) should not appear in the loot table. Instead the house key (🗝️) occupies the final tree loot slot. The hole (🕳️) remains on the board and is always lethal. The win condition on level 10+ is entering the house (🏡) after the boss fight, not using a parachute. Level 10 (non-NG+) is unaffected.
+On level 10+ (NG+ final level), the normal key (🔑) and parachute (🪂) should not appear in the loot table. Instead the house key (🗝️) occupies the final tree loot slot. The hole (🕳️) remains on the board and is always lethal. The win condition on level 10+ is entering the house (🏠) after the boss fight, not using a parachute. Level 10 (non-NG+) is unaffected.
 
 **Expected Behaviour:**
 - Level 10 (normal): unchanged — chute appears in tree loot as the last slot, door and key are absent, chute win applies.
