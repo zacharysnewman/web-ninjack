@@ -11,6 +11,8 @@ class GameState {
 	#currentRockLootIndex = 0;
 	#currentSnakeLootTable = [];
 	#currentSnakeLootIndex = 0;
+	#currentCrabLootTable = [];
+	#currentCrabLootIndex = 0;
 	#currentTileTable = [];
 	#currentLevel = startingLevel;
 	#currentHealth = maxHealth;
@@ -21,37 +23,41 @@ class GameState {
 	#snakes = [];
 	#rocks = [];
 	#doorLocked = true;
+	#houseLocked = true;
+	#houseKeys = 0;
 	#buttonsDisabled = false;
 	#ngPlus = false;
-	#scorpionsCount = 0;
-	#scorpions = [];
+	#crabs = [];
 
 	// ── Getters ──────────────────────────────────────────────────────
-	get playerX()          { return this.#playerX; }
-	get playerY()          { return this.#playerY; }
-	get grid()             { return this.#grid; }
-	get gold()             { return this.#gold; }
-	get swords()           { return this.#swords; }
-	get currentLootTable() { return this.#currentLootTable; }
-	get currentLootIndex() { return this.#currentLootIndex; }
-	get currentRockLootTable() { return this.#currentRockLootTable; }
-	get currentRockLootIndex() { return this.#currentRockLootIndex; }
+	get playerX()               { return this.#playerX; }
+	get playerY()               { return this.#playerY; }
+	get grid()                  { return this.#grid; }
+	get gold()                  { return this.#gold; }
+	get swords()                { return this.#swords; }
+	get currentLootTable()      { return this.#currentLootTable; }
+	get currentLootIndex()      { return this.#currentLootIndex; }
+	get currentRockLootTable()  { return this.#currentRockLootTable; }
+	get currentRockLootIndex()  { return this.#currentRockLootIndex; }
 	get currentSnakeLootTable() { return this.#currentSnakeLootTable; }
 	get currentSnakeLootIndex() { return this.#currentSnakeLootIndex; }
-	get currentTileTable() { return this.#currentTileTable; }
-	get currentLevel()     { return this.#currentLevel; }
-	get currentHealth()    { return this.#currentHealth; }
-	get currentKeys()      { return this.#currentKeys; }
-	get currentChutes()    { return this.#currentChutes; }
-	get currentMoves()     { return this.#currentMoves; }
-	get snakesCount()      { return this.#snakesCount; }
-	get snakes()           { return this.#snakes; }
-	get rocks()            { return this.#rocks; }
-	get doorLocked()       { return this.#doorLocked; }
-	get buttonsDisabled()  { return this.#buttonsDisabled; }
-	get ngPlus()           { return this.#ngPlus; }
-	get scorpionsCount()   { return this.#scorpionsCount; }
-	get scorpions()        { return this.#scorpions; }
+	get currentCrabLootTable()  { return this.#currentCrabLootTable; }
+	get currentCrabLootIndex()  { return this.#currentCrabLootIndex; }
+	get currentTileTable()      { return this.#currentTileTable; }
+	get currentLevel()          { return this.#currentLevel; }
+	get currentHealth()         { return this.#currentHealth; }
+	get currentKeys()           { return this.#currentKeys; }
+	get currentChutes()         { return this.#currentChutes; }
+	get currentMoves()          { return this.#currentMoves; }
+	get snakesCount()           { return this.#snakesCount; }
+	get snakes()                { return this.#snakes; }
+	get rocks()                 { return this.#rocks; }
+	get doorLocked()            { return this.#doorLocked; }
+	get houseLocked()           { return this.#houseLocked; }
+	get houseKeys()             { return this.#houseKeys; }
+	get buttonsDisabled()       { return this.#buttonsDisabled; }
+	get ngPlus()                { return this.#ngPlus; }
+	get crabs()                 { return this.#crabs; }
 
 	// ── Player ───────────────────────────────────────────────────────
 	setPlayer(x, y)        { this.#playerX = x; this.#playerY = y; }
@@ -83,6 +89,10 @@ class GameState {
 	useKey()               { this.#currentKeys = 0; }
 	resetKeys()            { this.#currentKeys = 0; }
 
+	// ── House Keys ───────────────────────────────────────────────────
+	giveHouseKey()         { this.#houseKeys = 1; }
+	resetHouseKeys()       { this.#houseKeys = 0; }
+
 	// ── Chutes ───────────────────────────────────────────────────────
 	giveChute()            { this.#currentChutes = 1; }
 	resetChutes()          { this.#currentChutes = 0; }
@@ -104,10 +114,15 @@ class GameState {
 	// ── Rocks ────────────────────────────────────────────────────────
 	clearRocks()           { this.#rocks = []; }
 	addRock(rock)          { this.#rocks.push(rock); }
+	removeRock(x, y)       { this.#rocks = this.#rocks.filter(r => !(r.x === x && r.y === y)); }
 
 	// ── Door ─────────────────────────────────────────────────────────
 	lockDoor()             { this.#doorLocked = true; }
 	unlockDoor()           { this.#doorLocked = false; }
+
+	// ── House ────────────────────────────────────────────────────────
+	lockHouse()            { this.#houseLocked = true; }
+	unlockHouse()          { this.#houseLocked = false; }
 
 	// ── Buttons ──────────────────────────────────────────────────────
 	setButtonsDisabled(v)  { this.#buttonsDisabled = v; }
@@ -121,19 +136,20 @@ class GameState {
 	setSnakeLootTable(table)   { this.#currentSnakeLootTable = table; this.#currentSnakeLootIndex = 0; }
 	drawSnakeLoot()            { return this.#currentSnakeLootTable[this.#currentSnakeLootIndex++]; }
 	restoreSnakeLoot(table, index) { this.#currentSnakeLootTable = table; this.#currentSnakeLootIndex = index; }
+	setCrabLootTable(table)    { this.#currentCrabLootTable = table; this.#currentCrabLootIndex = 0; }
+	drawCrabLoot()             { return this.#currentCrabLootTable[this.#currentCrabLootIndex++]; }
+	restoreCrabLoot(table, index) { this.#currentCrabLootTable = table; this.#currentCrabLootIndex = index; }
 
 	// ── Tile Table ───────────────────────────────────────────────────
 	setTileTable(table)    { this.#currentTileTable = table; }
 
-	// ── NG+ ──────────────────────────────────────────────────────────
-	setNgPlus(v)                { this.#ngPlus = v; }
-	incrementScorpionsCount()   { this.#scorpionsCount++; }
-	resetScorpionsCount()       { this.#scorpionsCount = 0; }
-	clearScorpions()            { this.#scorpions = []; }
-	addScorpion(s)              { this.#scorpions.push(s); }
-	removeScorpion(x, y)        { this.#scorpions = this.#scorpions.filter(s => !(s.x === x && s.y === y)); }
-	getScorpion(x, y)           { return this.#scorpions.find(s => s.x === x && s.y === y); }
-	setScorpions(arr)           { this.#scorpions = arr; }
+	// ── NG+ / Crabs ──────────────────────────────────────────────────
+	setNgPlus(v)           { this.#ngPlus = v; }
+	clearCrabs()           { this.#crabs = []; }
+	addCrab(s)             { this.#crabs.push(s); }
+	removeCrab(x, y)       { this.#crabs = this.#crabs.filter(s => !(s.x === x && s.y === y)); }
+	getCrab(x, y)          { return this.#crabs.find(s => s.x === x && s.y === y); }
+	setCrabs(arr)          { this.#crabs = arr; }
 
 	// ── Restore Setters (used by loadGame only) ───────────────────────
 	setHealth(n)           { this.#currentHealth = n; }
@@ -144,8 +160,9 @@ class GameState {
 	setChutes(n)           { this.#currentChutes = n; }
 	setMoves(n)            { this.#currentMoves = n; }
 	setSnakesCount(n)      { this.#snakesCount = n; }
-	setScorpionsCount(n)   { this.#scorpionsCount = n; }
 	setDoorLocked(v)       { this.#doorLocked = v; }
+	setHouseLocked(v)      { this.#houseLocked = v; }
+	setHouseKeys(n)        { this.#houseKeys = n; }
 	restoreLoot(table, index) { this.#currentLootTable = table; this.#currentLootIndex = index; }
 }
 

@@ -1,9 +1,9 @@
 function canSnakeMoveToTile(x, y) {
-	return ![TREE, ROCK, SNAKE, SCORPION, DOOR, KEY, CHUTE].includes(getGridTile(x, y));
+	return ![TREE, TREE_NG, ROCK, SNAKE, CRAB, SCORPION, DOOR, KEY, CHUTE, HOUSE, HOUSE_DAMAGED].includes(getGridTile(x, y));
 }
 
-function canScorpionMoveToTile(x, y) {
-	return ![TREE, ROCK, SNAKE, SCORPION, DOOR, KEY, CHUTE].includes(getGridTile(x, y));
+function canCrabMoveToTile(x, y) {
+	return ![TREE, TREE_NG, ROCK, SNAKE, CRAB, SCORPION, DOOR, KEY, CHUTE, HOUSE, HOUSE_DAMAGED].includes(getGridTile(x, y));
 }
 
 function snakeMove(snake, newX, newY) {
@@ -38,12 +38,12 @@ function snakeMove(snake, newX, newY) {
 	}
 }
 
-function scorpionMove(scorpion, newX, newY) {
-	if (scorpion.justSpawned) {
-		scorpion.justSpawned = false;
+function crabMove(crab, newX, newY) {
+	if (crab.justSpawned) {
+		crab.justSpawned = false;
 		return;
 	}
-	if (!canScorpionMoveToTile(newX, newY)) return;
+	if (!canCrabMoveToTile(newX, newY)) return;
 
 	const tileValue = getGridTile(newX, newY);
 	const isHole = tileValue === HOLE;
@@ -55,18 +55,18 @@ function scorpionMove(scorpion, newX, newY) {
 		handleDamage(2, newX, newY);
 	}
 
-	setGridTile(scorpion.x, scorpion.y, '');
+	setGridTile(crab.x, crab.y, '');
 
 	if (shouldDie) {
 		const notifyEl = isHole
 			? getTileElement(newX, newY)
-			: getTileElement(scorpion.x, scorpion.y);
-		state.removeScorpion(scorpion.x, scorpion.y);
+			: getTileElement(crab.x, crab.y);
+		state.removeCrab(crab.x, crab.y);
 		notify(SKULL, notifyEl);
 	} else {
-		setGridTile(newX, newY, SCORPION);
-		scorpion.x = newX;
-		scorpion.y = newY;
+		setGridTile(newX, newY, crab.tile || CRAB);
+		crab.x = newX;
+		crab.y = newY;
 	}
 }
 
@@ -74,16 +74,20 @@ function killSnake(x, y) {
 	state.removeSnake(x, y);
 }
 
-function killScorpion(x, y) {
-	state.removeScorpion(x, y);
+function killCrab(x, y) {
+	state.removeCrab(x, y);
 }
 
 function addSnake(x, y) {
 	state.addSnake({ x, y, justSpawned: true });
 }
 
-function addScorpion(x, y) {
-	state.addScorpion({ x, y, justSpawned: true, armored: true });
+function addCrab(x, y) {
+	state.addCrab({ x, y, justSpawned: true, armored: 1, tile: CRAB });
+}
+
+function addBoss(x, y) {
+	state.addCrab({ x, y, justSpawned: true, armored: 2, tile: SCORPION });
 }
 
 function moveSnakes() {
@@ -93,9 +97,9 @@ function moveSnakes() {
 	}
 }
 
-function moveScorpions() {
-	for (const scorpion of [...state.scorpions]) {
-		const { newX, newY } = getNewTileInDirection(getRandomDirection(), scorpion.x, scorpion.y);
-		scorpionMove(scorpion, newX, newY);
+function moveCrabs() {
+	for (const crab of [...state.crabs]) {
+		const { newX, newY } = getNewTileInDirection(getRandomDirection(), crab.x, crab.y);
+		crabMove(crab, newX, newY);
 	}
 }
