@@ -11,9 +11,33 @@ the first level.
 
 ## Availability
 
-- **Normal**: NG+ button appears only on the **win modal** (immediately after winning).
-- **Dev mode**: If `?dev=true` is in the URL, NG+ button also appears on the
-  **welcome screen** for testing without needing to complete a run.
+NG+ is **permanently unlocked** once the player wins the normal game. It does not
+reset on death — if you die mid-NG+ run and restart, you can still choose NG+ again.
+Only a fresh normal-mode win is required to unlock it in the first place.
+
+### Persistence mechanism
+
+A separate `localStorage` key `ngPlusUnlocked` tracks unlock status, independent
+of save data. `clearSave()` does **not** touch this key.
+
+```js
+// On normal win:
+localStorage.setItem('ngPlusUnlocked', 'true');
+
+// Check anywhere:
+const ngPlusUnlocked = localStorage.getItem('ngPlusUnlocked') === 'true';
+```
+
+### Where NG+ appears
+
+| Context | Condition | Layout |
+|---|---|---|
+| Win modal | Always (you just won) | Two buttons: **New Game** + **New Game+** |
+| Welcome screen | `ngPlusUnlocked` OR `devMode` | Two buttons: **New Game** + **New Game+** |
+| Welcome screen | Neither | Single button: **New Game** (current behavior) |
+
+NG+ is shown **alongside** New Game, not as a replacement. Both options are always
+available when NG+ is unlocked.
 
 Dev mode check (readable from any script):
 ```js
@@ -140,10 +164,22 @@ All changes are **NG+ only** (`state.ngPlus` guard). Normal game loot is untouch
 
 ### Enemy loot (shared by snakes and scorpions)
 
+The enemy loot table is sized to match exactly the number of killable enemies
+so that every enemy drops loot and the table never runs out of entries.
+
 | | Normal | NG+ |
 |---|---|---|
+| Total table size | `rockSnakes + snakesCount` | `12 + 9 = 21` |
 | ❤️ Hearts | 2 | **3** (+50%) |
-| 💰 Gold | totalEnemies − 2 | **totalEnemies − 3** |
+| 💰 Gold | table size − 2 | table size − 3 |
+
+`rockSnakes` = rocks that contain snakes (not hearts):
+- Normal: `13` (15 rocks − 2 heart slots)
+- NG+: `12` (15 rocks − 3 heart slots)
+
+So normal table = `13 + snakesCount` (grows 14→22 over the run).
+NG+ table = `21` (fixed: 12 rock snakes + 9 tree enemies regardless of
+scorpion/snake split — scorpions draw from the same table as snakes).
 
 ### Tree loot — swords
 
@@ -347,8 +383,13 @@ Rocks convert to a mix mirroring the tree loot ratio:
 - `scorpionsCount` rocks → 🦂 (armored)
 - Remainder → 🐍
 
+Shuffle `state.rocks` before splitting to avoid positional bias (without
+shuffling, the top-left rocks always become scorpions since rocks are stored
+in row-major order from world generation):
+
 ```js
-state.rocks.forEach((rock, i) => {
+const shuffledRocks = [...state.rocks].sort(() => Math.random() - 0.5);
+shuffledRocks.forEach((rock, i) => {
     const isScorpion = i < state.scorpionsCount;
     const enemy = isScorpion ? SCORPION : SNAKE;
     setGridTile(rock.x, rock.y, enemy);
@@ -378,23 +419,40 @@ Renders two `.modal-button` elements side by side:
 [ New Game ]   [ New Game+ ]
 ```
 
+On normal win, also sets `localStorage.setItem('ngPlusUnlocked', 'true')` before
+showing the modal.
+
 `handleWin()`:
 ```js
 const choice = await showWinModal(alertMessages.win());
 choice === 'ngplus' ? startNewGamePlus() : startNewGame();
 ```
 
-### Welcome modal — dev mode
+### Welcome modal — NG+ unlocked or dev mode
 
-In `main()`, if `devMode`:
+In `main()`:
 ```js
-const choice = await showWelcomeModal(alertMessages.welcome);
-// showWelcomeModal same two-button structure as showWinModal
-if (choice === 'ngplus') startNewGamePlus();
-else startNewGame();
+const ngPlusUnlocked = localStorage.getItem('ngPlusUnlocked') === 'true';
+if (ngPlusUnlocked || devMode) {
+    const choice = await showTwoButtonModal(alertMessages.welcome);
+    // showTwoButtonModal: same two-button structure as showWinModal
+    if (choice === 'ngplus') startNewGamePlus();
+    else startNewGame();
+} else {
+    await showModal(alertMessages.welcome);
+    startNewGame();
+}
 ```
 
-If not dev mode, keep existing `showModal(alertMessages.welcome)` → `startNewGame()`.
+### Win message — gold display
+
+The win message shows **total gold** (carried gold + gold earned during the run)
+as a single number. Gold is not broken out separately.
+
+### ⚔️ pickup notification
+
+When the player picks up `DBL_SWORD`, the pickup notification shows **`🗡️🗡️`**
+(two separate sword emoji), not `⚔️`.
 
 ---
 
@@ -418,6 +476,34 @@ state.setScorpions((d.scorpions ?? []).map(s => ({ ...s, justSpawned: false })))
 (with `armored` restored from scorpions array by position lookup).
 
 ---
+
+## Implementation Notes
+
+### `restoreWorld` must rebuild `#scorpions`
+
+`restoreWorld()` in `save.js` iterates the saved grid and calls `addRock` for
+`ROCK` tiles. It must also call `addScorpion` for `SCORPION` tiles, restoring the
+`armored` value from the saved scorpions array (look up by `{ x, y }` position).
+Without this, the visual grid restores correctly but combat breaks — no scorpion
+object exists in state to check armor.
+
+### `interactWithOpenTile` — optional `dir` param
+
+`dir` is added as an optional 3rd parameter. It is only used in the scorpion
+branch. All existing call sites pass 2 arguments and are unaffected.
+
+### Enemy freeze during scorpion combat
+
+`moveSnakes()` and `moveScorpions()` are not called when the player attacks a
+scorpion — same as current snake combat behavior. All enemies freeze for the
+turn during any melee interaction. This is intentional.
+
+### `ngPlusUnlocked` vs `ngPlus` in save
+
+- `ngPlusUnlocked` — `localStorage` key, never cleared, tracks whether the
+  feature is accessible. Set when winning a normal run.
+- `ngPlus` — in save data, tracks whether the **current run** is NG+. Cleared
+  with save data on death/new game, restored on load.
 
 ## New / Modified Files Summary
 
