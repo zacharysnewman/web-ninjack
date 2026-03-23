@@ -401,6 +401,13 @@ shuffledRocks.forEach((rock, i) => {
 
 ## UI Changes
 
+### "+" appears everywhere the mode or level is shown
+
+The `+` suffix is the universal signal that you are in or starting NG+. Every
+place the level or game mode is communicated to the player must include it.
+
+---
+
 ### Inventory display (`ui.js`)
 
 ```js
@@ -408,7 +415,40 @@ const levelStr = `🚪${state.currentLevel}${state.ngPlus ? '+' : ''}`;
 inventory.textContent = `${levelStr} ❤️${state.currentHealth} 🗡${state.swords}${dynamicText}`;
 ```
 
-Single ASCII `+` — no layout impact at `font-size: 16px`.
+Renders as `🚪1+`, `🚪5+`, etc. Single ASCII `+` — no layout impact at `font-size: 16px`.
+
+---
+
+### Alert messages (`ui.js` — `alertMessages`)
+
+All modal text that references the level or run must include `+` in NG+.
+
+**Death message:**
+```js
+death: () => `You died 💀 on Level ${state.currentLevel}${state.ngPlus ? '+' : ''}!`
+```
+
+**Normal win message** (unchanged in substance — `state.ngPlus` is `false`):
+```js
+// existing text, no change needed
+`Take a screenshot! 📸\nYou escaped the Forest!\n\nFinal score:\n💰${state.gold} Gold\n...`
+```
+
+**NG+ win message** (new — `state.ngPlus` is `true`):
+```js
+`Take a screenshot! 📸\nYou escaped the Forest... in New Game+!\n\nFinal score:\n💰${state.gold} Gold\n⏺️${state.currentMoves} Moves\n🕥${timer.value()} Seconds\n\nReady to beat your score?`
+```
+
+`handleWin()` picks the right message:
+```js
+const msg = state.ngPlus ? alertMessages.winNgPlus() : alertMessages.win();
+await showModal(msg);
+```
+
+**Welcome message** — body text is unchanged regardless of unlock state. The
+`+` is communicated through the button label, not the body.
+
+---
 
 ### Win flow — return to main menu
 
@@ -417,7 +457,7 @@ After the player clicks OK, control returns to the welcome screen (main menu).
 
 On a **normal-mode win**, set `ngPlusUnlocked` before showing the modal:
 ```js
-// normal win only:
+// normal win only (!state.ngPlus):
 localStorage.setItem('ngPlusUnlocked', 'true');
 ```
 
@@ -426,13 +466,7 @@ After the modal closes, call `showMainMenu()` (see below) instead of `startNewGa
 `handleDeath()` likewise calls `showMainMenu()` after its modal, so the NG+
 button is reachable after dying too.
 
-### Win message — gold display
-
-The win message shows **total gold** (carried gold + gold earned during the run)
-as a single number. Gold is not broken out separately.
-
-Normal win and NG+ win use **different message text** (NG+ win acknowledges
-completing the harder mode). Both are single OK-button modals.
+---
 
 ### Welcome screen — `showMainMenu()`
 
@@ -446,6 +480,7 @@ async function showMainMenu() {
     const ngPlusUnlocked = localStorage.getItem('ngPlusUnlocked') === 'true';
     if (ngPlusUnlocked || devMode) {
         const choice = await showTwoButtonWelcomeModal(alertMessages.welcome);
+        // buttons labelled "New Game" and "New Game+"
         if (choice === 'ngplus') startNewGamePlus();
         else startNewGame();
     } else {
@@ -466,8 +501,10 @@ async function main() {
 ```
 
 `showTwoButtonWelcomeModal` renders the same `.modal` structure as `showModal`
-but with two `.modal-button` elements (**New Game** / **New Game+**) and returns
-a Promise resolving to `'new'` or `'ngplus'`.
+but with two `.modal-button` elements labelled **"New Game"** and **"New Game+"**,
+returning a Promise resolving to `'new'` or `'ngplus'`.
+
+---
 
 ### ⚔️ pickup notification
 
