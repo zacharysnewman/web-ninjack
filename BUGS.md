@@ -213,3 +213,38 @@ setupLevel(chuteCount, doorCount, keyCount);
 
 **Affected Files:**
 - `scripts/game.js` — `advanceLevel()`
+
+---
+
+## House Key Should Appear in the Inventory UI
+
+**Description:**
+The inventory bar (`ui.js:updateGoldDisplay`) shows `🪂N` when the player holds a parachute, and `🔑N` for regular keys. When the player collects the house key (🗝️) on level 10+, it should appear in the same area of the inventory bar. Currently `HOUSE_KEY` has no display logic and would be invisible in the UI after collection.
+
+**Expected Behaviour:**
+Display priority (left to right in the dynamic slot) should be:
+1. `🪂N` — if player holds a chute (takes priority; only relevant on normal level 10, not 10+)
+2. `🗝️` — if player holds the house key (level 10+ only; show when `state.houseKeys > 0`)
+3. `🔑N` — otherwise (regular key, levels 1–9 and 1+–9+)
+
+Since level 10+ has no chute and no regular key, on that level the slot will show `🗝️` when collected or be blank until then.
+
+**Root Cause:**
+`updateGoldDisplay()` (`ui.js:12–14`) uses a single ternary:
+```js
+const dynamicText = state.currentChutes > 0 ? ` 🪂${state.currentChutes}` : `🔑${state.currentKeys}`;
+```
+There is no branch for `state.houseKeys`. `state.houseKeys` does not yet exist (it will be added as part of the NG+ House / House Key bug). Once that field exists, `updateGoldDisplay()` must be updated to include a house-key branch.
+
+**Required Change:**
+```js
+const dynamicText = state.currentChutes > 0
+    ? ` 🪂${state.currentChutes}`
+    : state.houseKeys > 0
+        ? ` 🗝️`
+        : ` 🔑${state.currentKeys}`;
+```
+
+**Affected Files:**
+- `scripts/ui.js` — `updateGoldDisplay()`
+- `scripts/state.js` — depends on `houseKeys` field being added (see NG+ House bug)
