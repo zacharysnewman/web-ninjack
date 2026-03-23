@@ -410,44 +410,64 @@ inventory.textContent = `${levelStr} ❤️${state.currentHealth} 🗡${state.sw
 
 Single ASCII `+` — no layout impact at `font-size: 16px`.
 
-### Win modal — two buttons
+### Win flow — return to main menu
 
-New `showWinModal(bodyText)` returns a Promise resolving to `'new'` or `'ngplus'`.
-Renders two `.modal-button` elements side by side:
+`handleWin()` uses the **existing single-button `showModal`** (no new modal type).
+After the player clicks OK, control returns to the welcome screen (main menu).
 
-```
-[ New Game ]   [ New Game+ ]
-```
-
-On normal win, also sets `localStorage.setItem('ngPlusUnlocked', 'true')` before
-showing the modal.
-
-`handleWin()`:
+On a **normal-mode win**, set `ngPlusUnlocked` before showing the modal:
 ```js
-const choice = await showWinModal(alertMessages.win());
-choice === 'ngplus' ? startNewGamePlus() : startNewGame();
+// normal win only:
+localStorage.setItem('ngPlusUnlocked', 'true');
 ```
 
-### Welcome modal — NG+ unlocked or dev mode
+After the modal closes, call `showMainMenu()` (see below) instead of `startNewGame()`.
 
-In `main()`:
-```js
-const ngPlusUnlocked = localStorage.getItem('ngPlusUnlocked') === 'true';
-if (ngPlusUnlocked || devMode) {
-    const choice = await showTwoButtonModal(alertMessages.welcome);
-    // showTwoButtonModal: same two-button structure as showWinModal
-    if (choice === 'ngplus') startNewGamePlus();
-    else startNewGame();
-} else {
-    await showModal(alertMessages.welcome);
-    startNewGame();
-}
-```
+`handleDeath()` likewise calls `showMainMenu()` after its modal, so the NG+
+button is reachable after dying too.
 
 ### Win message — gold display
 
 The win message shows **total gold** (carried gold + gold earned during the run)
 as a single number. Gold is not broken out separately.
+
+Normal win and NG+ win use **different message text** (NG+ win acknowledges
+completing the harder mode). Both are single OK-button modals.
+
+### Welcome screen — `showMainMenu()`
+
+Extract the welcome-screen logic from `main()` into a reusable `showMainMenu()`
+function so `handleWin()` and `handleDeath()` can call it:
+
+```js
+async function showMainMenu() {
+    startNewGame();   // reset to blank state while modal is shown
+    timer.stop();
+    const ngPlusUnlocked = localStorage.getItem('ngPlusUnlocked') === 'true';
+    if (ngPlusUnlocked || devMode) {
+        const choice = await showTwoButtonWelcomeModal(alertMessages.welcome);
+        if (choice === 'ngplus') startNewGamePlus();
+        else startNewGame();
+    } else {
+        await showModal(alertMessages.welcome);
+        startNewGame();
+    }
+}
+```
+
+`main()` becomes:
+```js
+async function main() {
+    // set up event listeners (once only)
+    if (!await loadGame()) {
+        showMainMenu();
+    }
+}
+```
+
+`showTwoButtonWelcomeModal` renders the same `.modal` structure as `showModal`
+but with two `.modal-button` elements (**New Game** / **New Game+**) and returns
+a Promise resolving to `'new'` or `'ngplus'`.
 
 ### ⚔️ pickup notification
 
@@ -514,8 +534,8 @@ turn during any melee interaction. This is intentional.
 | `worldGen.js` | `holeCount`/`treeCount` derived per mode; `pickHolePositions()`; hole-free tile table; NG+ loot variants (hearts, ⚔️, scorpion slots) |
 | `snake.js` | `addScorpion()`, `killScorpion()`, `moveScorpions()`, `canScorpionMoveToTile()`; add `SCORPION` to `canSnakeMoveToTile` blocked list |
 | `player.js` | `interactWithScorpion(x, y, dir)`; `DBL_SWORD` pickup (+2 swords); `SCORPION` branch in `interactWithVegetation`; thread `dir` through `interactWithOpenTile` |
-| `game.js` | `startNewGamePlus()`; `handleWin()` modal branching; `advanceLevel()` scorpion increment (no snake increment in NG+); NG+ final boss mix |
-| `ui.js` | `+` suffix in inventory; `showWinModal()` two-button variant; dev mode `showWelcomeModal()`; win message variants |
+| `game.js` | `startNewGamePlus()`; `showMainMenu()`; `handleWin()` sets `ngPlusUnlocked` + returns to main menu; `handleDeath()` returns to main menu; `advanceLevel()` scorpion increment (no snake increment in NG+); NG+ final boss mix |
+| `ui.js` | `+` suffix in inventory; `showTwoButtonWelcomeModal()` for welcome screen; win message variants (normal vs NG+) |
 | `save.js` | Persist/restore `ngPlus`, `scorpionsCount`, `scorpions` (with `armored`); `restoreWorld` handles `SCORPION` tiles |
 | `index.html` | Bump `app.js` and `styles.css` version query params after all changes |
-| `styles.css` | Two-button modal layout (buttons side-by-side); `knockbackEcho` keyframe + `.knockback-echo` class |
+| `styles.css` | Two-button welcome modal layout (buttons side-by-side, welcome screen only); `knockbackEcho` keyframe + `.knockback-echo` class |
