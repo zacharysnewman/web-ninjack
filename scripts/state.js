@@ -22,6 +22,9 @@ class GameState {
 	#rocks = [];
 	#doorLocked = true;
 	#buttonsDisabled = false;
+	#ngPlus = false;
+	#scorpionsCount = 0;
+	#scorpions = [];
 
 	// ── Getters ──────────────────────────────────────────────────────
 	get playerX()          { return this.#playerX; }
@@ -46,6 +49,9 @@ class GameState {
 	get rocks()            { return this.#rocks; }
 	get doorLocked()       { return this.#doorLocked; }
 	get buttonsDisabled()  { return this.#buttonsDisabled; }
+	get ngPlus()           { return this.#ngPlus; }
+	get scorpionsCount()   { return this.#scorpionsCount; }
+	get scorpions()        { return this.#scorpions; }
 
 	// ── Player ───────────────────────────────────────────────────────
 	setPlayer(x, y)        { this.#playerX = x; this.#playerY = y; }
@@ -119,6 +125,16 @@ class GameState {
 	// ── Tile Table ───────────────────────────────────────────────────
 	setTileTable(table)    { this.#currentTileTable = table; }
 
+	// ── NG+ ──────────────────────────────────────────────────────────
+	setNgPlus(v)                { this.#ngPlus = v; }
+	incrementScorpionsCount()   { this.#scorpionsCount++; }
+	resetScorpionsCount()       { this.#scorpionsCount = 0; }
+	clearScorpions()            { this.#scorpions = []; }
+	addScorpion(s)              { this.#scorpions.push(s); }
+	removeScorpion(x, y)        { this.#scorpions = this.#scorpions.filter(s => !(s.x === x && s.y === y)); }
+	getScorpion(x, y)           { return this.#scorpions.find(s => s.x === x && s.y === y); }
+	setScorpions(arr)           { this.#scorpions = arr; }
+
 	// ── Restore Setters (used by loadGame only) ───────────────────────
 	setHealth(n)           { this.#currentHealth = n; }
 	setLevel(n)            { this.#currentLevel = n; }
@@ -128,6 +144,7 @@ class GameState {
 	setChutes(n)           { this.#currentChutes = n; }
 	setMoves(n)            { this.#currentMoves = n; }
 	setSnakesCount(n)      { this.#snakesCount = n; }
+	setScorpionsCount(n)   { this.#scorpionsCount = n; }
 	setDoorLocked(v)       { this.#doorLocked = v; }
 	restoreLoot(table, index) { this.#currentLootTable = table; this.#currentLootIndex = index; }
 }

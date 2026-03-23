@@ -23,6 +23,9 @@ async function saveGame() {
 		snakes: state.snakes.map(s => ({ x: s.x, y: s.y })),
 		timerSeconds: timer.value(),
 		gridState: state.grid.map(row => [...row]),
+		ngPlus: state.ngPlus,
+		scorpionsCount: state.scorpionsCount,
+		scorpions: state.scorpions.map(s => ({ x: s.x, y: s.y, armored: s.armored })),
 	};
 	const json = JSON.stringify(saveData);
 	const hash = await hashString(json);
@@ -37,8 +40,9 @@ function clearSave() {
 	localStorage.removeItem(SAVE_HASH_KEY);
 }
 
-function restoreWorld(gridState) {
+function restoreWorld(gridState, savedScorpions = []) {
 	state.clearRocks();
+	state.clearScorpions();
 	state.resetGrid();
 
 	const world = document.getElementById('world');
@@ -52,7 +56,12 @@ function restoreWorld(gridState) {
 
 			const value = gridState[y][x];
 			setGridTile(x, y, value);
-			if (value === ROCK) state.addRock({ x, y });
+			if (value === ROCK) {
+				state.addRock({ x, y });
+			} else if (value === SCORPION) {
+				const sd = savedScorpions.find(s => s.x === x && s.y === y);
+				state.addScorpion({ x, y, justSpawned: false, armored: sd ? sd.armored : true });
+			}
 		}
 	}
 }
@@ -82,6 +91,9 @@ async function loadGame() {
 		state.restoreRockLoot(d.currentRockLootTable ?? [], d.currentRockLootIndex ?? 0);
 		state.restoreSnakeLoot(d.currentSnakeLootTable ?? [], d.currentSnakeLootIndex ?? 0);
 		state.setSnakes(d.snakes.map(s => ({ ...s, justSpawned: false })));
+		state.setNgPlus(d.ngPlus ?? false);
+		state.setScorpionsCount(d.scorpionsCount ?? 0);
+		state.setScorpions((d.scorpions ?? []).map(s => ({ ...s, justSpawned: false })));
 		timer.reset();
 		timer.seconds = d.timerSeconds + 1;
 		timer.start();
@@ -91,7 +103,7 @@ async function loadGame() {
 				gridState.slice(y * worldSize, (y + 1) * worldSize)
 			);
 		}
-		restoreWorld(gridState);
+		restoreWorld(gridState, d.scorpions ?? []);
 		setGridTile(state.playerX, state.playerY, NINJA);
 		updateGoldDisplay();
 		await saveGame();
