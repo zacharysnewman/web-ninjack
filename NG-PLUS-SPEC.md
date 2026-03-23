@@ -248,18 +248,90 @@ const { newX: backX, newY: backY } =
 
 const atWall = backX === state.playerX && backY === state.playerY;
 const backTile = getGridTile(backX, backY);
-const knockbackable = ['', COIN, GOLD, GEM, SWORD, DBL_SWORD, HEART].includes(backTile);
+const knockbackable = ['', COIN, GOLD, GEM, SWORD, DBL_SWORD, HEART, HOLE].includes(backTile);
 
 if (!atWall && knockbackable) {
-    if (backTile !== '') interactWithOpenTile(backX, backY, backDir); // collect item
-    movePlayerTo(backX, backY);
+    notifyKnockbackEcho(backDir, getTileElement(state.playerX, state.playerY));
+    if (backTile === HOLE) {
+        interactWithHole(backX, backY);   // death or chute-win, same as normal move
+    } else {
+        if (backTile !== '') interactWithOpenTile(backX, backY, backDir); // collect item
+        movePlayerTo(backX, backY);
+    }
 }
 ```
 
-**Knockback-eligible tiles**: empty, or any collectible item. The player silently
-lands and collects if applicable.
+**Knockback-eligible tiles**: empty, collectible item, or hole.
 
-**Blocked**: TREE, ROCK, HOLE, SNAKE, SCORPION, DOOR, KEY — no knockback.
+| Tile behind player | Result |
+|---|---|
+| Empty (`''`) | Knockback — player moves |
+| Gold / Coin / Gem / ❤️ / 🗡️ / ⚔️ | Knockback — player moves and collects |
+| 🕳️ Hole | Knockback — `interactWithHole` fires (death or chute-win) |
+| 🌲 Tree / 🪨 Rock | No knockback |
+| 🐍 Snake / 🦂 Scorpion | No knockback |
+| 🚪 Door / 🔑 Key | No knockback |
+| Map edge | No knockback |
+
+### Knockback echo notify (`notifyKnockbackEcho`)
+
+On every successful knockback (including hole knockbacks, before death resolves),
+a ghost 🥷 animates from the player's **current tile** in the **knockback direction**
+(i.e. away from the scorpion). It is semi-transparent from the start, travels
+farther than a normal notify, and fades out faster — a visual echo of the
+displacement.
+
+**`ui.js`** — new function:
+
+```js
+function notifyKnockbackEcho(direction, sourceElement) {
+    const container = document.getElementById('notification-container');
+    const rect = sourceElement.getBoundingClientRect();
+
+    const el = document.createElement('div');
+    el.textContent = NINJA;
+    el.classList.add('knockback-echo');
+
+    const dist = rect.width * 2;   // travel ~2 tile widths
+    const translate = {
+        up:    `0px, -${dist}px`,
+        down:  `0px,  ${dist}px`,
+        left:  `-${dist}px, 0px`,
+        right: ` ${dist}px, 0px`,
+    };
+    el.style.setProperty('--kb-translate', translate[direction]);
+    el.style.width      = `${rect.width}px`;
+    el.style.height     = `${rect.height}px`;
+    el.style.fontSize   = `${rect.height * 0.8}px`;
+    el.style.lineHeight = `${rect.height}px`;
+    el.style.left       = `${rect.left}px`;
+    el.style.top        = `${rect.top}px`;
+
+    container.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+}
+```
+
+**`styles.css`** — new keyframe and class:
+
+```css
+@keyframes knockbackEcho {
+    0%   { transform: translate(0, 0);                      opacity: 0.55; }
+    100% { transform: translate(var(--kb-translate));        opacity: 0;    }
+}
+
+.knockback-echo {
+    position: absolute;
+    pointer-events: none;
+    animation: knockbackEcho 0.25s ease-out forwards;
+}
+```
+
+Key differences from the existing `floatUpAndFade` notify:
+- Starts at `opacity: 0.55` (already ghosted — it's an echo, not a solid object)
+- Direction follows knockback, not always upward
+- Duration `0.25s` vs `0.8s` — snappier
+- Distance `2 × tile width` vs `1 × tile height` — travels noticeably farther
 
 **Turn cost**: none. Knockback is part of the attack action.
 - `incrementMoves()` already fired at top of `move()` — not called again.
@@ -360,4 +432,4 @@ state.setScorpions((d.scorpions ?? []).map(s => ({ ...s, justSpawned: false })))
 | `ui.js` | `+` suffix in inventory; `showWinModal()` two-button variant; dev mode `showWelcomeModal()`; win message variants |
 | `save.js` | Persist/restore `ngPlus`, `scorpionsCount`, `scorpions` (with `armored`); `restoreWorld` handles `SCORPION` tiles |
 | `index.html` | Bump `app.js` and `styles.css` version query params after all changes |
-| `styles.css` | Two-button modal layout (buttons side-by-side) |
+| `styles.css` | Two-button modal layout (buttons side-by-side); `knockbackEcho` keyframe + `.knockback-echo` class |
