@@ -66,3 +66,12 @@ async function main() {
 }
 
 main();
+
+if (devMode) {
+	const btn = document.createElement('button');
+	btn.id = 'debug-max-btn';
+	btn.textContent = '⚡ Max';
+	btn.title = 'Set health & swords to 99';
+	btn.addEventListener('click', debugMaxStats);
+	document.body.appendChild(btn);
+}

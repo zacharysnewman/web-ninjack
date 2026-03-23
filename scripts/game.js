@@ -2,6 +2,36 @@ function endGame() {
 	advanceLevel();
 }
 
+// ── Debug (devMode only) ──────────────────────────────────────────
+function debugSkipToLevel(targetLevel, ngPlus) {
+	clearSave();
+	state.setPlayer(Math.floor(worldSize / 2), Math.floor(worldSize / 2));
+	state.resetGold();
+	state.resetSwords();
+	state.resetHealth();
+	state.resetChutes();
+	state.resetMoves();
+	state.setNgPlus(ngPlus);
+	state.setSnakesCount(ngPlus ? 0 : targetLevel - 1);
+	state.setLevel(targetLevel - 1); // setupLevel's incrementLevel() lands on targetLevel
+	timer.reset();
+	timer.start();
+	const isFinal = targetLevel === 10;
+	let chuteCount = 0, doorCount = 0, keyCount = 0, houseKeyCount = 0;
+	if (isFinal && ngPlus)    { houseKeyCount = 1; }
+	else if (isFinal)         { chuteCount = 1; }
+	else                      { doorCount = 1; keyCount = 1; }
+	setupLevel(chuteCount, doorCount, keyCount, houseKeyCount);
+	saveGame();
+}
+
+function debugMaxStats() {
+	state.setHealth(99);
+	state.setSwords(99);
+	updateGoldDisplay();
+	saveGame();
+}
+
 function handleDamage(damage, x, y) {
 	state.takeDamage(damage);
 	updateGoldDisplay();

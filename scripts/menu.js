@@ -15,6 +15,22 @@ function showMainMenu(saveLevel = null, onContinue = null, onNewGame = () => {},
 		buttonsHtml += `<button id="menu-new-game">New Game</button>`;
 		if (hasNgPlus) buttonsHtml += `<button id="menu-ng-plus">New Game+</button>`;
 
+		if (devMode) {
+			const levelOptions = Array.from({ length: 10 }, (_, i) =>
+				`<option value="${i + 1}">${i + 1}</option>`
+			).join('');
+			buttonsHtml += `
+				<div class="debug-section">
+					<span class="debug-label">🛠 DEV</span>
+					<div class="debug-skip-row">
+						<span class="debug-text">Skip to</span>
+						<select id="debug-level-select" class="debug-select">${levelOptions}</select>
+						<button id="debug-skip" class="debug-btn">→ Normal</button>
+						${hasNgPlus ? '<button id="debug-skip-ng" class="debug-btn">→ NG+</button>' : ''}
+					</div>
+				</div>`;
+		}
+
 		// Centered content
 		const content = document.createElement('div');
 		content.id = 'menu-content';
@@ -79,7 +95,7 @@ function showMainMenu(saveLevel = null, onContinue = null, onNewGame = () => {},
 		document.addEventListener('click', () => { closePopup(); });
 
 		async function handleAction(callback) {
-			menu.querySelectorAll('#menu-continue, #menu-new-game, #menu-ng-plus').forEach(b => b.disabled = true);
+			menu.querySelectorAll('#menu-continue, #menu-new-game, #menu-ng-plus, #debug-skip, #debug-skip-ng, #debug-level-select').forEach(b => b.disabled = true);
 			await callback();
 			menu.style.opacity = '0';
 			menu.addEventListener('transitionend', () => {
@@ -94,6 +110,17 @@ function showMainMenu(saveLevel = null, onContinue = null, onNewGame = () => {},
 		menu.querySelector('#menu-new-game').addEventListener('click', () => handleAction(onNewGame));
 		if (hasNgPlus) {
 			menu.querySelector('#menu-ng-plus').addEventListener('click', () => handleAction(onNgPlus));
+		}
+		if (devMode) {
+			const getLevel = () => parseInt(menu.querySelector('#debug-level-select').value, 10);
+			menu.querySelector('#debug-skip').addEventListener('click', () =>
+				handleAction(() => debugSkipToLevel(getLevel(), false))
+			);
+			if (hasNgPlus) {
+				menu.querySelector('#debug-skip-ng').addEventListener('click', () =>
+					handleAction(() => debugSkipToLevel(getLevel(), true))
+				);
+			}
 		}
 	});
 }
