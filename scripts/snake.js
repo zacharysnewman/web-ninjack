@@ -44,6 +44,8 @@ function crabMove(crab, newX, newY) {
 		return;
 	}
 	if (!canCrabMoveToTile(newX, newY)) return;
+	// Boss scorpion can't fall into the hole — it must be killed by the player
+	if (crab.tile === SCORPION && getGridTile(newX, newY) === HOLE) return;
 
 	const tileValue = getGridTile(newX, newY);
 	const isHole = tileValue === HOLE;
