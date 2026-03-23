@@ -1,9 +1,9 @@
 function canSnakeMoveToTile(x, y) {
-	return ![TREE, TREE_NG, ROCK, SNAKE, CRAB, SCORPION, DOOR, KEY, CHUTE, HOUSE, HOUSE_DAMAGED].includes(getGridTile(x, y));
+	return ![TREE, TREE_NG, ROCK, MOAI, SNAKE, CRAB, SCORPION, DOOR, KEY, CHUTE, HOUSE, HOUSE_DAMAGED].includes(getGridTile(x, y));
 }
 
 function canCrabMoveToTile(x, y) {
-	return ![TREE, TREE_NG, ROCK, SNAKE, CRAB, SCORPION, DOOR, KEY, CHUTE, HOUSE, HOUSE_DAMAGED].includes(getGridTile(x, y));
+	return ![TREE, TREE_NG, ROCK, MOAI, SNAKE, CRAB, SCORPION, DOOR, KEY, CHUTE, HOUSE, HOUSE_DAMAGED].includes(getGridTile(x, y));
 }
 
 function snakeMove(snake, newX, newY) {

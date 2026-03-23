@@ -3,6 +3,7 @@ const SNAKE = "🐍";
 const CRAB = "🦀";
 const SCORPION = "🦂";
 const ROCK = "🪨";
+const MOAI = "🗿";
 const TREE = "🌲";
 const TREE_NG = "🌳";
 const HOLE = "🕳️";
