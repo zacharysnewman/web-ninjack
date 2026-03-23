@@ -158,7 +158,14 @@ Crabs currently share `snakeLootTable` with snakes — both call `state.drawSnak
 **Root Cause:**
 `player.js:92` calls `state.drawSnakeLoot()` when a scorpion (crab) is killed — the same table used for snakes. There is no `crabLootTable`, no `drawCrabLoot()`, and no `generateCrabLootTable()`. Furthermore, `addScorpion()` (`snake.js`) receives only `(x, y)` and stores no spawn-origin metadata, so there is no way to distinguish a rock-spawned crab from a tree-spawned crab at kill time. `interactWithVegetation()` (`player.js:135–140`) knows the origin (`isRock`) when it calls `addScorpion()`, but that information is discarded.
 
-**Required Changes:**
+**Simpler Alternative — Prefer This If Viable:**
+Before splitting pools or adding per-entity origin tracking, check whether a `rockCrabKeyPending` boolean flag in `state.js` is sufficient. The idea:
+- On level 10+, `interactWithVegetation()` sets `state.rockCrabKeyPending = true` whenever a rock reveal draws a crab from `rockLootTable`.
+- The crab-kill path checks this flag first: if true, drop `HOUSE_KEY` and clear the flag; otherwise draw normally from `crabLootTable`.
+- This avoids per-entity origin storage and avoids a second loot pool — no changes to `addScorpion()`, `state.scorpions` entries, or `save.js` beyond one extra boolean.
+- Only adds complexity if there can be multiple rock-crabs alive simultaneously on 10+ (in which case the flag could mis-assign the key to the wrong kill). Verify whether the level 10+ rock loot table guarantees at most one crab from rocks before committing to the full per-entity approach.
+
+**Full Per-Entity Approach (Fallback):**
 - Add `RING = "💍"` to `constants.js`; add `collectGold` handling for value 20 in `player.js:interactWithOpenTile` (e.g. `if (tileValue === RING) { collectGold(x, y, 20); }`)
 - Add `generateCrabLootTable()` in `worldGen.js` — normal drops are `RING` and `HEART`; on level 10+ the rock-crab sub-pool includes one `HOUSE_KEY` slot
 - Add `crabLootTable` / `crabLootIndex`, `drawCrabLoot()`, `setCrabLootTable()`, `restoreCrabLoot()` to `state.js`
