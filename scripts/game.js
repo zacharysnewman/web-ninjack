@@ -54,7 +54,8 @@ function handleDeath(x, y) {
 		generateBackground();
 		const ngPlusAvailable = localStorage.getItem('ngPlusUnlocked') === 'true' || devMode;
 		const onNgPlus = ngPlusAvailable ? () => startNewGamePlus() : null;
-		await showMainMenu(null, null, () => startNewGame(), onNgPlus);
+		const ngPlusLabel = (!state.ngPlus && ngPlusAvailable) ? 'Continue in New Game+' : 'New Game+';
+		await showMainMenu(null, null, () => startNewGame(), onNgPlus, ngPlusLabel);
 		enableButtons();
 	}, 1000);
 }
