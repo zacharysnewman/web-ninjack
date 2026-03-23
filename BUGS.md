@@ -30,10 +30,18 @@ The trigger differs by mode:
 
 **Fix:** Add `state.removeRock(x, y)` to `state.js` and call it inside `interactWithVegetation()` when a rock is revealed. `handleFinalBoss()` can then trust that `state.rocks` only contains positions that are still `ROCK` tiles, so no additional filtering is required at boss-trigger time.
 
+**Scorpion Boss Stats:**
+The scorpion boss (🦂) has **2 shields + 1 health = 3 total hits** to kill, vs regular crabs which have 1 shield + 1 health = 2 hits. The existing `armored` field is a boolean (`true`/`false`), which only supports one shield level. It must be changed to a **numeric armor counter**:
+- Regular crabs: `armored: 1`
+- Boss scorpion: `armored: 2`
+- Hit logic in `interactWithScorpion()` (`player.js:68`): change `scorpion.armored = false` → `scorpion.armored--`; change `if (scorpion.armored)` → `if (scorpion.armored > 0)` (already works since any positive number is truthy, but explicit is clearer)
+- `save.js` saves `armored` as a value; numeric saves fine with no migration needed.
+
 **Affected Files:**
-- `scripts/game.js` — `handleFinalBoss()`: NG+ path spawns crabs + 1 scorpion boss; add boss-kill handler that mass-removes remaining enemies and restores house tile
-- `scripts/state.js` — add `removeRock(x, y)` method; add `bossFightActive` flag (or rely on tile state: `HOUSE_DAMAGED` present ↔ boss is active)
-- `scripts/player.js` — `interactWithVegetation()` calls `state.removeRock(x, y)` when rock is revealed; collecting `HOUSE_KEY` from a tree calls `handleFinalBoss()` on level 10+
+- `scripts/game.js` — `handleFinalBoss()`: NG+ path spawns crabs + 1 scorpion boss (with `armored: 2`); add boss-kill handler that mass-removes remaining enemies and restores house tile
+- `scripts/state.js` — add `removeRock(x, y)` method; boss-active state can be inferred from `HOUSE_DAMAGED` tile presence (no extra flag needed)
+- `scripts/player.js` — `interactWithVegetation()` calls `state.removeRock(x, y)` when rock is revealed; collecting `HOUSE_KEY` from a tree calls `handleFinalBoss()` on level 10+; `interactWithScorpion()` uses `armored--` instead of `armored = false`
+- `scripts/snake.js` — `addScorpion()` uses `armored: 1` for regular crabs (replacing `true`)
 - `scripts/constants.js` — add `HOUSE_DAMAGED = "🏚️"`
 
 ---
