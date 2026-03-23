@@ -90,7 +90,7 @@ In New Game+, the second hole should be replaced by a house tile 🏡. The house
 
 **Details:**
 - Normal NG+ levels (1+–9+): world has 1 hole + 1 house; house key does not exist yet → house is permanently locked that run.
-- Level 10+: one of the rocks that would spawn a crab instead drops a 🗝️ house key; collecting it unlocks the house.
+- Level 10+: one specific crab that spawns from a rock drops the 🗝️ house key when killed; collecting it unlocks the house.
 - Entering the unlocked house triggers the NG+ win condition (same as the hole/chute win today).
 - The house key 🗝️ is a distinct constant from the regular door key 🔑 (`KEY`).
 - Enemies (snakes, crabs) should not be able to move onto the house tile.
@@ -100,8 +100,8 @@ In New Game+, the second hole should be replaced by a house tile 🏡. The house
 
 **Affected Files:**
 - `scripts/constants.js` — add `HOUSE = "🏡"`, `HOUSE_KEY = "🗝️"`
-- `scripts/worldGen.js` — `generateTileTable()`, `generateWorld()` (place 1 hole + 1 house in NG+); `generateRockLootTable()` (inject house key at level 10+)
-- `scripts/player.js` — add `interactWithHouse()` handler; update `handleMove()` to dispatch on `HOUSE`; add house-key collect path
+- `scripts/worldGen.js` — `generateTileTable()`, `generateWorld()` (place 1 hole + 1 house in NG+)
+- `scripts/player.js` — add `interactWithHouse()` handler; update `handleMove()` to dispatch on `HOUSE`; add house-key collect path; one crab on level 10+ drops `HOUSE_KEY` on death instead of its normal drop
 - `scripts/snake.js` — add `HOUSE` to blocked tiles in `canSnakeMoveToTile()` and `canScorpionMoveToTile()`
 - `scripts/state.js` — track house-locked state and house-key inventory
 - `scripts/ui.js` — show house key in inventory when held
