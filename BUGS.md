@@ -85,8 +85,6 @@ The enemy currently displayed as 🦂 (scorpion) should be displayed as 🦀 (cr
 - `scripts/state.js` — `scorpionsCount`, `scorpions` fields and methods
 - `scripts/save.js` — scorpion save/load logic
 
-**Save Compatibility Note:**
-`save.js` persists `gridState` as raw emoji strings and restores crabs via `value === SCORPION` in `restoreWorld()`. After renaming `SCORPION = "🦂"` to `CRAB = "🦀"`, any saved game with `"🦂"` in the grid will not be recognised as a crab on load — the check becomes `value === "🦀"`. **Existing saves will silently break.** Decision needed: invalidate old saves on load (simplest) or add a migration pass that replaces `"🦂"` with `"🦀"` in the loaded `gridState`.
 
 ---
 
@@ -103,9 +101,6 @@ In New Game+, trees should display as 🌳 instead of 🌲 to visually distingui
 - `scripts/worldGen.js` — `generateTileTable()`, `generateWorld()`
 - `scripts/player.js` — `interactWithVegetation()`, `handleMove()`
 - `scripts/snake.js` — `canSnakeMoveToTile()`, `canScorpionMoveToTile()`
-
-**Save Compatibility Note:**
-`save.js` stores and restores the raw `gridState` emoji grid. An NG+ save made before this change will have `"🌲"` for every tree. On load, `setGridTile` renders it correctly visually, but interaction code will check `tileValue === TREE_NG` (`"🌳"`) and miss those tiles — they'll behave as open ground instead of trees. Decision needed: invalidate NG+ saves or add a migration pass replacing `"🌲"` → `"🌳"` in loaded NG+ `gridState`.
 
 **move() reference:** The bug lists `handleMove()` but the actual function in `player.js` is `move()`. Confirm the function name when implementing.
 
@@ -124,11 +119,11 @@ In New Game+, the second hole should be replaced by a house tile 🏡. The house
 - Enemies (snakes, crabs) should not be able to move onto the house tile in any state.
 
 **House Visual States:**
-The house tile uses two emoji constants throughout its lifetime:
-- `HOUSE` (🏡) — initial state (locked) and post-boss state (unlockable). `interactWithHouse()` checks `state.houseLocked`: if locked, shows a "locked" notify and does nothing; if unlocked, calls `handleWin()`.
-- `HOUSE_DAMAGED` (🏚️) — active during the boss fight (triggered when house key is collected). Non-interactive: `move()` treats it as a blocked tile (no interaction dispatched, player cannot move onto it).
+The house tile uses two emoji constants:
+- `HOUSE` (🏡) — used in **all** accessible states: initially locked, and again after the boss is defeated (unlockable). The tile never changes emoji to reflect locked vs unlocked; `interactWithHouse()` checks `state.houseLocked` at walk-in time: if locked, shows a notify and does nothing; if unlocked, calls `handleWin()`.
+- `HOUSE_DAMAGED` (🏚️) — used **only during the boss fight** (set when the house key is collected from a tree). Non-interactive: `move()` treats it as a blocked tile; the player cannot move onto it at all.
 
-The transition back from 🏚️ to 🏡 happens when the scorpion boss is killed (see Final Boss bug), accompanied by a ⚡️ notify. At that point `state.houseLocked` is set to `false`.
+The transition back from 🏚️ → 🏡 happens when the scorpion boss is killed, accompanied by a ⚡️ notify. At that point `state.houseLocked` is also set to `false`.
 
 **Root Cause:**
 `worldGen.js:22` and `worldGen.js:123` use `holeCount = state.ngPlus ? 2 : 1`, placing two `HOLE` tiles. There is no `HOUSE` / `HOUSE_DAMAGED` constant, no house-placement logic, no house-key constant, no house interaction handler, and no tree-loot slot for the house key on level 10+.
@@ -214,8 +209,7 @@ Crabs currently share `snakeLootTable` with snakes — both call `state.drawSnak
 - `scripts/player.js` — crab-kill path draws from `crabLootTable`; `interactWithOpenTile()` handles `RING`
 - `scripts/save.js` — persist `crabLootTable`/`crabLootIndex` (currently only `{ x, y, armored }` is saved for scorpions — `save.js:28`)
 
-**Open Question:**
-- **Exact crab loot table composition:** The snake table uses 2 hearts out of the total enemy count. What is the RING : HEART ratio for the crab table? A concrete count is needed before implementing `generateCrabLootTable()`.
+**Crab loot table composition:** 6 of the total entries are `HEART`; the remainder are `RING`. For example, on level 10+ with 10 tree-crabs: 6 hearts + 4 rings.
 
 ---
 
@@ -266,40 +260,26 @@ The inventory bar (`ui.js:updateGoldDisplay`) shows `🪂N` when the player hold
 
 **Expected Behaviour:**
 Display priority (left to right in the dynamic slot) should be:
-1. `🪂N` — if player holds a chute (takes priority; only relevant on normal level 10, not 10+)
-2. `🗝️` — if player holds the house key (level 10+ only; show when `state.houseKeys > 0`)
-3. `🔑N` — otherwise (regular key, levels 1–9 and 1+–9+)
-
-Since level 10+ has no chute and no regular key, on that level the slot will show `🗝️` when collected or be blank until then.
+1. `🪂N` — if player holds a chute (only relevant on normal level 10)
+2. `🗝️N` — if on level 10+ (`state.ngPlus && state.currentLevel === 9`); shows `🗝️0` before collecting and `🗝️1` after, mirroring how `🔑0` shows on normal level 10 before the key is found
+3. `🔑N` — all other levels (regular key count)
 
 **Root Cause:**
 `updateGoldDisplay()` (`ui.js:12–14`) uses a single ternary:
 ```js
 const dynamicText = state.currentChutes > 0 ? ` 🪂${state.currentChutes}` : `🔑${state.currentKeys}`;
 ```
-There is no branch for `state.houseKeys`. `state.houseKeys` does not yet exist (it will be added as part of the NG+ House / House Key bug). Once that field exists, `updateGoldDisplay()` must be updated to include a house-key branch.
+There is no branch for `state.houseKeys`.
 
 **Required Change:**
 ```js
 const dynamicText = state.currentChutes > 0
     ? ` 🪂${state.currentChutes}`
-    : state.houseKeys > 0
-        ? ` 🗝️`
+    : (state.ngPlus && state.currentLevel === 9)
+        ? ` 🗝️${state.houseKeys}`
         : ` 🔑${state.currentKeys}`;
 ```
 
 **Affected Files:**
 - `scripts/ui.js` — `updateGoldDisplay()`
 - `scripts/state.js` — depends on `houseKeys` field being added (see NG+ House bug)
-
-**Required Change (revised):**
-```js
-const dynamicText = state.currentChutes > 0
-    ? ` 🪂${state.currentChutes}`
-    : state.houseKeys > 0
-        ? ` 🗝️`
-        : state.currentKeys > 0
-            ? ` 🔑${state.currentKeys}`
-            : ``;
-```
-On level 10+, before the house key is collected both `houseKeys` and `currentKeys` are 0, so the slot shows nothing. This is correct — showing `🔑0` on a level where a regular key is impossible would be confusing.
