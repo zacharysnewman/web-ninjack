@@ -141,3 +141,37 @@ In New Game+, the number of crabs (currently scorpions) and snakes hidden in **t
 - `scripts/game.js` — `startNewGamePlus()`, `advanceLevel()`
 - `scripts/worldGen.js` — `generateLootTable()`, `generateRockLootTable()`, `generateSnakeLootTable()`
 - `scripts/state.js` — `snakesCount` / `scorpionsCount` initialisation and increment logic
+
+---
+
+## Crabs Should Have a Separate Loot Pool and Rock-vs-Tree Spawn Tracking
+
+**Description:**
+Crabs currently share `snakeLootTable` with snakes — both call `state.drawSnakeLoot()` on death and drop either `GOLD` (💰) or `HEART` (❤️). Crabs should draw from their own loot pool and drop `RING` (💍, worth 20 gold) or `HEART` (❤️) instead. Additionally, on level 10+, exactly one rock-spawned crab must drop the `HOUSE_KEY` (🗝️) instead of its normal crab loot. This requires tracking whether each living crab was spawned from a rock or a tree, since tree-spawned crabs must never drop the house key.
+
+**Expected Behaviour:**
+- All crabs (rock- or tree-spawned) draw from a new `crabLootTable` on kill: `RING` or `HEART` drops, proportioned similarly to the snake table.
+- `RING` (💍) is a new constant worth 20 gold, collected via `collectGold(x, y, 20)`.
+- On level 10+, the crab loot pool for rock-spawned crabs includes exactly one `HOUSE_KEY` slot in place of one `RING` or `HEART` drop; tree-spawned crabs are unaffected.
+- Snakes continue to draw from `snakeLootTable` (GOLD / HEART) unchanged.
+
+**Root Cause:**
+`player.js:92` calls `state.drawSnakeLoot()` when a scorpion (crab) is killed — the same table used for snakes. There is no `crabLootTable`, no `drawCrabLoot()`, and no `generateCrabLootTable()`. Furthermore, `addScorpion()` (`snake.js`) receives only `(x, y)` and stores no spawn-origin metadata, so there is no way to distinguish a rock-spawned crab from a tree-spawned crab at kill time. `interactWithVegetation()` (`player.js:135–140`) knows the origin (`isRock`) when it calls `addScorpion()`, but that information is discarded.
+
+**Required Changes:**
+- Add `RING = "💍"` to `constants.js`; add `collectGold` handling for value 20 in `player.js:interactWithOpenTile` (e.g. `if (tileValue === RING) { collectGold(x, y, 20); }`)
+- Add `generateCrabLootTable()` in `worldGen.js` — normal drops are `RING` and `HEART`; on level 10+ the rock-crab sub-pool includes one `HOUSE_KEY` slot
+- Add `crabLootTable` / `crabLootIndex`, `drawCrabLoot()`, `setCrabLootTable()`, `restoreCrabLoot()` to `state.js`
+- Add `drawRockCrabLoot()` / `rockCrabLootTable` in `state.js` as a separate pool for rock-spawned crabs on level 10+ (or pass origin into a single draw function)
+- Update `addScorpion(x, y, fromRock = false)` in `snake.js` and store origin on the scorpion object in `state.js` (`state.scorpions` entries)
+- Update `interactWithVegetation()` in `player.js` to pass `isRock` when calling `addScorpion()`
+- Update `killScorpion` / crab-kill path in `player.js:88–93` to look up the crab's origin and call `drawRockCrabLoot()` vs `drawCrabLoot()` accordingly
+- Update `save.js` to persist `crabLootTable` / index (and rock-crab table if separate)
+
+**Affected Files:**
+- `scripts/constants.js` — add `RING = "💍"`
+- `scripts/worldGen.js` — add `generateCrabLootTable()`; call it alongside `generateSnakeLootTable()`
+- `scripts/state.js` — add crab loot table fields and draw methods; store spawn origin on scorpion entries
+- `scripts/snake.js` — `addScorpion()` accepts and stores `fromRock` flag
+- `scripts/player.js` — `interactWithVegetation()` passes origin; crab-kill path draws from correct pool; `interactWithOpenTile()` handles `RING`
+- `scripts/save.js` — persist crab loot state
