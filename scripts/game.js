@@ -9,7 +9,7 @@ function handleDamage(damage, x, y) {
 	if (state.currentHealth <= 0) {
 		handleDeath(x, y);
 	} else {
-		notify(DAMAGE, getTileElement(x, y));
+		notify(DAMAGE.repeat(damage), getTileElement(x, y));
 	}
 }
 
@@ -29,26 +29,68 @@ function handleDeath(x, y) {
 	}, 1000);
 }
 
+// Normal mode (level 10): all remaining rocks burst open as snakes
 function handleFinalBoss() {
-	if (state.ngPlus) {
-		const shuffledRocks = [...state.rocks].sort(() => Math.random() - 0.5);
-		shuffledRocks.forEach((rock, i) => {
-			const isScorpion = i < state.scorpionsCount;
-			const enemy = isScorpion ? SCORPION : SNAKE;
-			notify(ROCK, getTileElement(rock.x, rock.y));
-			setGridTile(rock.x, rock.y, enemy);
-			if (isScorpion) {
-				addScorpion(rock.x, rock.y);
-			} else {
-				addSnake(rock.x, rock.y);
+	state.rocks.forEach(rock => {
+		notify(ROCK, getTileElement(rock.x, rock.y));
+		setGridTile(rock.x, rock.y, SNAKE);
+		addSnake(rock.x, rock.y);
+	});
+	state.clearRocks();
+}
+
+// NG+ (level 10+): house is damaged, rocks burst as crabs + 1 boss scorpion
+function handleFinalBossNG() {
+	// Transition house: HOUSE → HOUSE_DAMAGED
+	for (let y = 0; y < worldSize; y++) {
+		for (let x = 0; x < worldSize; x++) {
+			if (getGridTile(x, y) === HOUSE) {
+				notify('⚡️', getTileElement(x, y));
+				setGridTile(x, y, HOUSE_DAMAGED);
+				break;
 			}
-		});
-	} else {
-		state.rocks.forEach(rock => {
-			notify(ROCK, getTileElement(rock.x, rock.y));
-			setGridTile(rock.x, rock.y, SNAKE);
-			addSnake(rock.x, rock.y);
-		});
+		}
+	}
+
+	if (state.rocks.length === 0) return;
+
+	// Shuffle rocks, first becomes the boss scorpion, rest become crabs
+	const shuffledRocks = [...state.rocks].sort(() => Math.random() - 0.5);
+	shuffledRocks.forEach((rock, i) => {
+		notify(ROCK, getTileElement(rock.x, rock.y));
+		if (i === 0) {
+			setGridTile(rock.x, rock.y, SCORPION);
+			addBoss(rock.x, rock.y);
+		} else {
+			setGridTile(rock.x, rock.y, CRAB);
+			addCrab(rock.x, rock.y);
+		}
+	});
+	state.clearRocks();
+}
+
+// Called when player kills the boss scorpion: sweep board, restore house
+function handleBossKill() {
+	// Remove all remaining crabs (no loot)
+	for (const crab of [...state.crabs]) {
+		setGridTile(crab.x, crab.y, '');
+		state.removeCrab(crab.x, crab.y);
+	}
+	// Remove all remaining snakes (no loot)
+	for (const snake of [...state.snakes]) {
+		setGridTile(snake.x, snake.y, '');
+		state.removeSnake(snake.x, snake.y);
+	}
+	// Transition house: HOUSE_DAMAGED → HOUSE, now unlockable
+	for (let y = 0; y < worldSize; y++) {
+		for (let x = 0; x < worldSize; x++) {
+			if (getGridTile(x, y) === HOUSE_DAMAGED) {
+				notify('⚡️', getTileElement(x, y));
+				setGridTile(x, y, HOUSE);
+				state.unlockHouse();
+				return;
+			}
+		}
 	}
 }
 
@@ -70,14 +112,17 @@ function handleWin() {
 	}, 1000);
 }
 
-function setupLevel(chuteCount, doorCount, keyCount) {
+function setupLevel(chuteCount, doorCount, keyCount, houseKeyCount = 0) {
 	state.clearSnakes();
-	state.clearScorpions();
+	state.clearCrabs();
 	state.resetKeys();
 	state.lockDoor();
-	state.setLootTable(generateLootTable(chuteCount, doorCount, keyCount));
+	state.lockHouse();
+	state.resetHouseKeys();
+	state.setLootTable(generateLootTable(chuteCount, doorCount, keyCount, houseKeyCount));
 	state.setRockLootTable(generateRockLootTable());
 	state.setSnakeLootTable(generateSnakeLootTable());
+	state.setCrabLootTable(generateCrabLootTable());
 	state.setTileTable(fisherYatesShuffle(generateTileTable()));
 	generateWorld();
 	state.incrementLevel();
@@ -94,7 +139,6 @@ function startNewGame() {
 	state.resetChutes();
 	state.resetMoves();
 	state.resetSnakesCount();
-	state.resetScorpionsCount();
 	state.setNgPlus(false);
 	timer.reset();
 	timer.start();
@@ -111,8 +155,7 @@ function startNewGamePlus() {
 	state.resetLevel();
 	state.resetChutes();
 	state.resetMoves();
-	state.setSnakesCount(9);
-	state.resetScorpionsCount();
+	state.resetSnakesCount();
 	state.setNgPlus(true);
 	timer.reset();
 	timer.start();
@@ -120,16 +163,22 @@ function startNewGamePlus() {
 }
 
 function advanceLevel() {
-	if (state.ngPlus) {
-		state.incrementScorpionsCount();
-		// snakesCount stays fixed at 9
-	} else {
+	if (!state.ngPlus) {
 		state.incrementSnakesCount();
 	}
+	// NG+ enemy counts are computed per-level in generateLootTable()
+
 	const isFinalLevel = state.currentLevel === 9;
-	const chuteCount = isFinalLevel ? 1 : 0;
-	const doorCount = isFinalLevel ? 0 : 1;
-	const keyCount = isFinalLevel ? 0 : 1;
-	setupLevel(chuteCount, doorCount, keyCount);
+	let chuteCount, doorCount, keyCount, houseKeyCount;
+	if (isFinalLevel && state.ngPlus) {
+		// Level 10+: house key replaces chute; hole is lethal; no door/key
+		chuteCount = 0; doorCount = 0; keyCount = 0; houseKeyCount = 1;
+	} else if (isFinalLevel) {
+		// Level 10 normal: chute triggers boss, no door/key
+		chuteCount = 1; doorCount = 0; keyCount = 0; houseKeyCount = 0;
+	} else {
+		chuteCount = 0; doorCount = 1; keyCount = 1; houseKeyCount = 0;
+	}
+	setupLevel(chuteCount, doorCount, keyCount, houseKeyCount);
 	saveGame();
 }

@@ -17,15 +17,16 @@ async function saveGame() {
 		currentKeys: state.currentKeys, currentChutes: state.currentChutes,
 		currentMoves: state.currentMoves, snakesCount: state.snakesCount,
 		doorLocked: state.doorLocked,
+		houseLocked: state.houseLocked, houseKeys: state.houseKeys,
 		currentLootTable: state.currentLootTable, currentLootIndex: state.currentLootIndex,
 		currentRockLootTable: state.currentRockLootTable, currentRockLootIndex: state.currentRockLootIndex,
 		currentSnakeLootTable: state.currentSnakeLootTable, currentSnakeLootIndex: state.currentSnakeLootIndex,
+		currentCrabLootTable: state.currentCrabLootTable, currentCrabLootIndex: state.currentCrabLootIndex,
 		snakes: state.snakes.map(s => ({ x: s.x, y: s.y })),
 		timerSeconds: timer.value(),
 		gridState: state.grid.map(row => [...row]),
 		ngPlus: state.ngPlus,
-		scorpionsCount: state.scorpionsCount,
-		scorpions: state.scorpions.map(s => ({ x: s.x, y: s.y, armored: s.armored })),
+		crabs: state.crabs.map(s => ({ x: s.x, y: s.y, armored: s.armored, tile: s.tile || CRAB })),
 	};
 	const json = JSON.stringify(saveData);
 	const hash = await hashString(json);
@@ -40,9 +41,9 @@ function clearSave() {
 	localStorage.removeItem(SAVE_HASH_KEY);
 }
 
-function restoreWorld(gridState, savedScorpions = []) {
+function restoreWorld(gridState, savedCrabs = []) {
 	state.clearRocks();
-	state.clearScorpions();
+	state.clearCrabs();
 	state.resetGrid();
 
 	const world = document.getElementById('world');
@@ -58,9 +59,9 @@ function restoreWorld(gridState, savedScorpions = []) {
 			setGridTile(x, y, value);
 			if (value === ROCK) {
 				state.addRock({ x, y });
-			} else if (value === SCORPION) {
-				const sd = savedScorpions.find(s => s.x === x && s.y === y);
-				state.addScorpion({ x, y, justSpawned: false, armored: sd ? sd.armored : true });
+			} else if (value === CRAB || value === SCORPION) {
+				const sd = savedCrabs.find(s => s.x === x && s.y === y);
+				state.addCrab({ x, y, justSpawned: false, armored: sd ? sd.armored : 1, tile: sd ? (sd.tile || value) : value });
 			}
 		}
 	}
@@ -87,13 +88,17 @@ async function loadGame() {
 		state.setMoves(d.currentMoves);
 		state.setSnakesCount(d.snakesCount);
 		state.setDoorLocked(d.doorLocked);
+		state.setHouseLocked(d.houseLocked ?? true);
+		state.setHouseKeys(d.houseKeys ?? 0);
 		state.restoreLoot(d.currentLootTable, d.currentLootIndex);
 		state.restoreRockLoot(d.currentRockLootTable ?? [], d.currentRockLootIndex ?? 0);
 		state.restoreSnakeLoot(d.currentSnakeLootTable ?? [], d.currentSnakeLootIndex ?? 0);
+		state.restoreCrabLoot(d.currentCrabLootTable ?? [], d.currentCrabLootIndex ?? 0);
 		state.setSnakes(d.snakes.map(s => ({ ...s, justSpawned: false })));
 		state.setNgPlus(d.ngPlus ?? false);
-		state.setScorpionsCount(d.scorpionsCount ?? 0);
-		state.setScorpions((d.scorpions ?? []).map(s => ({ ...s, justSpawned: false })));
+		// Support legacy saves that used 'scorpions' field name
+		const savedCrabs = d.crabs ?? d.scorpions ?? [];
+		state.setCrabs(savedCrabs.map(s => ({ ...s, justSpawned: false, tile: s.tile || CRAB })));
 		timer.reset();
 		timer.seconds = d.timerSeconds + 1;
 		timer.start();
@@ -103,7 +108,7 @@ async function loadGame() {
 				gridState.slice(y * worldSize, (y + 1) * worldSize)
 			);
 		}
-		restoreWorld(gridState, d.scorpions ?? []);
+		restoreWorld(gridState, savedCrabs);
 		setGridTile(state.playerX, state.playerY, NINJA);
 		updateGoldDisplay();
 		await saveGame();

@@ -19,19 +19,27 @@ function pickHolePositions(count) {
 }
 
 function generateTileTable() {
-	const holeCount = state.ngPlus ? 2 : 1;
-	const treeCount = totalTiles - playerCount - holeCount - rockCount;
+	// NG+ uses 2 special tiles (1 hole + 1 house); normal uses 1 hole
+	const specialCount = state.ngPlus ? 2 : 1;
+	const treeCount = totalTiles - playerCount - specialCount - rockCount;
 	const rockTiles = Array(rockCount).fill(ROCK);
-	const treeTiles = Array(treeCount).fill(TREE);
-	// Holes are placed separately via pickHolePositions — not in the tile table
+	const treeTiles = Array(treeCount).fill(state.ngPlus ? TREE_NG : TREE);
+	// Holes/house are placed separately via pickHolePositions — not in the tile table
 	return [...rockTiles, ...treeTiles];
 }
 
 function generateSnakeLootTable() {
 	if (state.ngPlus) {
-		const totalEnemies = 12 + 9; // 12 rock snakes + 9 tree enemies = 21
-		const heartDrops = Array(3).fill(HEART);
-		const goldDrops = Array(totalEnemies - 3).fill(GOLD);
+		// displayLevel is currentLevel + 1 since increment hasn't happened yet
+		const displayLevel = state.currentLevel + 1;
+		const snakesInTrees = Math.max(0, Math.min(4 + displayLevel, 10 - displayLevel));
+		// On level 10+, all rocks produce crabs (handled by crab loot); 1+–9+ rocks produce snakes
+		const rockSnakes = displayLevel < 10 ? rockCount - 2 : 0;
+		const totalSnakes = rockSnakes + snakesInTrees;
+		if (totalSnakes === 0) return [];
+		const heartCount = Math.min(2, totalSnakes);
+		const heartDrops = Array(heartCount).fill(HEART);
+		const goldDrops = Array(totalSnakes - heartCount).fill(GOLD);
 		return fisherYatesShuffle([...heartDrops, ...goldDrops]);
 	}
 	const totalSnakes = (rockCount - 2) + state.snakesCount;
@@ -41,37 +49,54 @@ function generateSnakeLootTable() {
 }
 
 function generateRockLootTable() {
-	if (state.ngPlus) {
-		const heartDrops = Array(3).fill(HEART);
-		const snakeDrops = Array(rockCount - 3).fill(SNAKE);
-		return fisherYatesShuffle([...heartDrops, ...snakeDrops]);
+	// Level 10+ (NG+ only): all rocks produce crabs
+	if (state.ngPlus && state.currentLevel === 9) {
+		return Array(rockCount).fill(CRAB);
 	}
+	// Normal mode and NG+ levels 1+–9+: same rock loot
 	const heartDrops = Array(2).fill(HEART);
 	const snakeDrops = Array(rockCount - 2).fill(SNAKE);
 	return fisherYatesShuffle([...heartDrops, ...snakeDrops]);
 }
 
-function generateLootTable(chuteCount, doorCount, keyCount) {
+function generateCrabLootTable() {
+	if (!state.ngPlus) return [];
+	const displayLevel = state.currentLevel + 1;
+	const crabsInTrees = displayLevel;
+	// On level 10+, rocks also produce crabs (15 more potential kills)
+	const crabsInRocks = displayLevel === 10 ? rockCount : 0;
+	const totalCrabs = crabsInTrees + crabsInRocks;
+	const heartCount = Math.min(6, totalCrabs);
+	const heartDrops = Array(heartCount).fill(HEART);
+	const ringDrops = Array(totalCrabs - heartCount).fill(RING);
+	return fisherYatesShuffle([...heartDrops, ...ringDrops]);
+}
+
+function generateLootTable(chuteCount, doorCount, keyCount, houseKeyCount = 0) {
 	if (state.ngPlus) {
-		const holeCount = 2;
-		const treeCount = totalTiles - playerCount - holeCount - rockCount; // 63
-		const totalEnemySlots = 9; // always 9 (snakes + scorpions)
+		const specialCount = 2; // 1 hole + 1 house
+		const treeCount = totalTiles - playerCount - specialCount - rockCount; // 63
+		const displayLevel = state.currentLevel + 1; // 1–10
+		const crabsInTrees = displayLevel;
+		const snakesInTrees = Math.max(0, Math.min(4 + displayLevel, 10 - displayLevel));
+		const totalEnemySlots = crabsInTrees + snakesInTrees;
 		const totalSwordSlots = 5; // 3 single + 2 double
-		const remainingCount = treeCount - totalEnemySlots - totalSwordSlots - goldBagsCount - gemCount - doorCount - keyCount - chuteCount;
-		const snakeDrops = Array(9 - state.scorpionsCount).fill(SNAKE);
-		const scorpionDrops = Array(state.scorpionsCount).fill(SCORPION);
+		const remainingCount = treeCount - totalEnemySlots - totalSwordSlots - goldBagsCount - gemCount - doorCount - keyCount - chuteCount - houseKeyCount;
+		const snakeDrops = Array(snakesInTrees).fill(SNAKE);
+		const crabDrops = Array(crabsInTrees).fill(CRAB);
 		const singleSwordDrops = Array(3).fill(SWORD);
 		const doubleSwordDrops = Array(2).fill(DBL_SWORD);
 		const goldBagDrops = Array(goldBagsCount).fill(COIN);
 		const gemDrops = Array(gemCount).fill(GEM);
 		const chuteDrop = Array(chuteCount).fill(CHUTE);
+		const houseKeyDrop = Array(houseKeyCount).fill(HOUSE_KEY);
 		const emptyDrops = Array(remainingCount).fill('');
 		const doorDrop = Array(doorCount).fill(DOOR);
 		const keyDrop = Array(keyCount).fill(KEY);
 		return [...fisherYatesShuffle([
-			...snakeDrops, ...scorpionDrops, ...singleSwordDrops, ...doubleSwordDrops,
+			...snakeDrops, ...crabDrops, ...singleSwordDrops, ...doubleSwordDrops,
 			...goldBagDrops, ...gemDrops, ...emptyDrops, ...doorDrop, ...keyDrop
-		]), ...chuteDrop];
+		]), ...chuteDrop, ...houseKeyDrop];
 	}
 	const holeCount = 1;
 	const treeCount = totalTiles - playerCount - holeCount - rockCount;
@@ -117,12 +142,15 @@ function generateBackground() {
 
 function generateWorld() {
 	state.clearRocks();
-	state.clearScorpions();
+	state.clearCrabs();
 	state.resetGrid();
 
-	const holeCount = state.ngPlus ? 2 : 1;
-	const holePositions = pickHolePositions(holeCount);
-	const holeSet = new Set(holePositions.map(p => `${p.x},${p.y}`));
+	// NG+ gets 1 hole + 1 house; normal gets 1 hole
+	const specialCount = state.ngPlus ? 2 : 1;
+	const specialPositions = pickHolePositions(specialCount);
+	const holeKey = `${specialPositions[0].x},${specialPositions[0].y}`;
+	const houseKey = state.ngPlus ? `${specialPositions[1].x},${specialPositions[1].y}` : null;
+	const specialSet = new Set(specialPositions.map(p => `${p.x},${p.y}`));
 
 	const world = document.getElementById('world');
 	world.innerHTML = '';
@@ -135,10 +163,11 @@ function generateWorld() {
 			world.appendChild(tile);
 
 			let value;
+			const key = `${x},${y}`;
 			if (x === state.playerX && y === state.playerY) {
 				value = NINJA;
-			} else if (holeSet.has(`${x},${y}`)) {
-				value = HOLE;
+			} else if (specialSet.has(key)) {
+				value = key === houseKey ? HOUSE : HOLE;
 			} else {
 				value = state.currentTileTable[tileIndex++];
 			}

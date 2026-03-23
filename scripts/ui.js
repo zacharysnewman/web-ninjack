@@ -9,7 +9,11 @@ const alertMessages = {
 function updateGoldDisplay() {
 	const inventory = document.getElementById('inventory');
 	const stats = document.getElementById('stats');
-	const dynamicText = state.currentChutes > 0 ? ` 🪂${state.currentChutes}` : `🔑${state.currentKeys}`;
+	const dynamicText = state.currentChutes > 0
+		? ` 🪂${state.currentChutes}`
+		: (state.ngPlus && state.currentLevel === 9)
+			? ` 🗝️${state.houseKeys}`
+			: ` 🔑${state.currentKeys}`;
 	const levelStr = `🚪${state.currentLevel}${state.ngPlus ? '+' : ''}`;
 	inventory.textContent = `${levelStr} ❤️${state.currentHealth} 🗡${state.swords}${dynamicText}`;
 	stats.textContent = `💰${state.gold} ⏺️${state.currentMoves} 🕥${timer.value()}`;
@@ -24,7 +28,8 @@ function notify(emoji, targetElement) {
 	emojiElement.textContent = emoji;
 	emojiElement.classList.add('emoji-notification');
 
-	emojiElement.style.width = `${rect.width}px`;
+	emojiElement.style.width = 'auto';
+	emojiElement.style.whiteSpace = 'nowrap';
 	emojiElement.style.height = `${rect.height}px`;
 	emojiElement.style.fontSize = `${rect.height * 0.8}px`;
 	emojiElement.style.lineHeight = `${rect.height}px`;
