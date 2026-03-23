@@ -178,3 +178,38 @@ A `rockCrabKeyPending` boolean was considered but ruled out. Level 10+ has 10 tr
 - `scripts/snake.js` — `addScorpion()` accepts and stores `fromRock` flag
 - `scripts/player.js` — `interactWithVegetation()` passes origin; crab-kill path draws from correct pool; `interactWithOpenTile()` handles `RING`
 - `scripts/save.js` — persist crab loot state
+
+---
+
+## Level 10+ Should Have No Key, No Parachute, and a Lethal Hole
+
+**Description:**
+On level 10+ (NG+ final level), the normal key (🔑) and parachute (🪂) should not appear in the loot table. The hole (🕳️) remains on the board and is always lethal — there is no way to safely survive it. The win condition on level 10+ is entering the house (🏡) with the house key (🗝️), not using the parachute. Level 10 (non-NG+) is unaffected and keeps its current parachute-based win condition.
+
+**Expected Behaviour:**
+- Level 10 (normal): unchanged — chute appears in tree loot, door and key are absent, chute win applies.
+- Level 10+ (NG+): `chuteCount = 0`, `doorCount = 0`, `keyCount = 0` — no key, no parachute, hole kills on contact.
+
+**Root Cause:**
+`advanceLevel()` (`game.js:129–133`) checks `isFinalLevel = state.currentLevel === 9` and always sets `chuteCount = 1, doorCount = 0, keyCount = 0` when true, regardless of `state.ngPlus`. The NG+ final level needs `chuteCount = 0` as well.
+
+`interactWithHole()` (`player.js:123–133`) already kills the player when `state.currentChutes === 0`, so no change is needed there — since no chute is placed on level 10+, the hole is naturally lethal.
+
+**Required Change:**
+In `advanceLevel()` (`game.js`), split the final-level logic by NG+ flag:
+
+```js
+const isFinalLevel = state.currentLevel === 9;
+let chuteCount, doorCount, keyCount;
+if (isFinalLevel && state.ngPlus) {
+    chuteCount = 0; doorCount = 0; keyCount = 0;
+} else if (isFinalLevel) {
+    chuteCount = 1; doorCount = 0; keyCount = 0;
+} else {
+    chuteCount = 0; doorCount = 1; keyCount = 1;
+}
+setupLevel(chuteCount, doorCount, keyCount);
+```
+
+**Affected Files:**
+- `scripts/game.js` — `advanceLevel()`
