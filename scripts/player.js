@@ -53,6 +53,52 @@ function interactWithSnake(newX, newY) {
 	return true;
 }
 
+function interactWithScorpion(newX, newY, dir) {
+	const playerEl = getTileElement(state.playerX, state.playerY);
+	const scorpionEl = getTileElement(newX, newY);
+
+	if (state.swords > 0) {
+		state.useSword();
+		updateGoldDisplay();
+		notify(SWORD, playerEl);
+
+		const scorpion = state.getScorpion(newX, newY);
+		if (scorpion && scorpion.armored) {
+			// Armor break — scorpion stays, player knocked back
+			scorpion.armored = false;
+			notify('🛡️', scorpionEl);
+
+			const opposite = { up: 'down', down: 'up', left: 'right', right: 'left' };
+			const backDir = opposite[dir];
+			const { newX: backX, newY: backY } = getNewTileInDirection(backDir, state.playerX, state.playerY);
+			const atWall = backX === state.playerX && backY === state.playerY;
+			const backTile = getGridTile(backX, backY);
+			const knockbackable = ['', COIN, GOLD, GEM, SWORD, DBL_SWORD, HEART, HOLE].includes(backTile);
+
+			if (!atWall && knockbackable) {
+				notifyKnockbackEcho(backDir, getTileElement(state.playerX, state.playerY));
+				if (backTile === HOLE) {
+					interactWithHole(backX, backY);
+				} else {
+					if (backTile !== '') interactWithOpenTile(backX, backY, backDir);
+					movePlayerTo(backX, backY);
+				}
+			}
+		} else {
+			// Kill scorpion
+			setGridTile(newX, newY, '');
+			killScorpion(newX, newY);
+			notify(SKULL, scorpionEl);
+			const loot = state.drawSnakeLoot();
+			setGridTile(newX, newY, loot);
+		}
+		return true;
+	}
+
+	handleDamage(2, state.playerX, state.playerY);
+	return true;
+}
+
 function interactWithDoor(newX, newY) {
 	if (state.doorLocked) {
 		if (state.currentKeys > 0) {
@@ -90,25 +136,31 @@ function interactWithVegetation(newX, newY) {
 	const isRock = getGridTile(newX, newY) === ROCK;
 	const revealedTile = isRock ? state.drawRockLoot() : state.drawLoot();
 	if (revealedTile === SNAKE) addSnake(newX, newY);
+	else if (revealedTile === SCORPION) addScorpion(newX, newY);
 	setGridTile(newX, newY, revealedTile);
 	notify(isRock ? ROCK : TREE, getTileElement(newX, newY));
 	return false;
 }
 
-function interactWithOpenTile(newX, newY) {
+function interactWithOpenTile(newX, newY, dir) {
 	const tileValue = getGridTile(newX, newY);
 
-	if (tileValue === GOLD)       { collectGold(newX, newY, 5); }
-	else if (tileValue === COIN)  { collectGold(newX, newY, 1); }
-	else if (tileValue === GEM)   { collectGold(newX, newY, 10); }
-	else if (tileValue === SWORD) { collectItem(newX, newY, SWORD, () => state.addSword()); }
-	else if (tileValue === HEART) { collectItem(newX, newY, HEART, () => state.heal()); }
-	else if (tileValue === KEY)   { collectItem(newX, newY, KEY,   () => state.giveKey()); }
+	if (tileValue === GOLD)           { collectGold(newX, newY, 5); }
+	else if (tileValue === COIN)      { collectGold(newX, newY, 1); }
+	else if (tileValue === GEM)       { collectGold(newX, newY, 10); }
+	else if (tileValue === SWORD)     { collectItem(newX, newY, SWORD, () => state.addSword()); }
+	else if (tileValue === DBL_SWORD) {
+		collectItem(newX, newY, SWORD + SWORD, () => { state.addSword(); state.addSword(); });
+	}
+	else if (tileValue === HEART)     { collectItem(newX, newY, HEART, () => state.heal()); }
+	else if (tileValue === KEY)       { collectItem(newX, newY, KEY,   () => state.giveKey()); }
 	else if (tileValue === CHUTE) {
 		collectItem(newX, newY, CHUTE, () => state.giveChute());
 		handleFinalBoss();
 	} else if (tileValue === SNAKE) {
 		return interactWithSnake(newX, newY);
+	} else if (tileValue === SCORPION) {
+		return interactWithScorpion(newX, newY, dir);
 	}
 
 	return false;
@@ -138,9 +190,10 @@ function move(direction) {
 	} else if (tileValue === TREE || tileValue === ROCK) {
 		interactWithVegetation(newX, newY);
 	} else {
-		if (!interactWithOpenTile(newX, newY)) movePlayerTo(newX, newY);
+		if (!interactWithOpenTile(newX, newY, direction)) movePlayerTo(newX, newY);
 	}
 
 	moveSnakes();
+	moveScorpions();
 	if (state.currentHealth > 0) saveGame();
 }

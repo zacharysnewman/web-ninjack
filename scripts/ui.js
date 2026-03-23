@@ -1,15 +1,17 @@
 const alertMessages = {
 	welcome: `Welcome to Ninjack! A rogue-like puzzle-ish dungeon crawler game! Let me know if you love it or have any issues! And good luck!\n\nCan you escape Level 🚪10 of the Forest?`,
 	nextLevel: 'Next level!',
-	death: () => `You died 💀 on Level ${state.currentLevel}!`,
-	win: () => `Take a screenshot! 📸\nYou escaped the Forest!\n\nFinal score:\n💰${state.gold} Gold\n⏺️${state.currentMoves} Moves\n🕥${timer.value()} Seconds\n\nReady to beat your score?`
+	death: () => `You died 💀 on Level ${state.currentLevel}${state.ngPlus ? '+' : ''}!`,
+	win: () => `Take a screenshot! 📸\nYou escaped the Forest!\n\nFinal score:\n💰${state.gold} Gold\n⏺️${state.currentMoves} Moves\n🕥${timer.value()} Seconds\n\nReady to beat your score?`,
+	winNgPlus: () => `Take a screenshot! 📸\nYou escaped the Forest... in New Game+!\n\nFinal score:\n💰${state.gold} Gold\n⏺️${state.currentMoves} Moves\n🕥${timer.value()} Seconds\n\nReady to beat your score?`
 };
 
 function updateGoldDisplay() {
 	const inventory = document.getElementById('inventory');
 	const stats = document.getElementById('stats');
 	const dynamicText = state.currentChutes > 0 ? ` 🪂${state.currentChutes}` : `🔑${state.currentKeys}`;
-	inventory.textContent = `🚪${state.currentLevel} ❤️${state.currentHealth} 🗡${state.swords}${dynamicText}`;
+	const levelStr = `🚪${state.currentLevel}${state.ngPlus ? '+' : ''}`;
+	inventory.textContent = `${levelStr} ❤️${state.currentHealth} 🗡${state.swords}${dynamicText}`;
 	stats.textContent = `💰${state.gold} ⏺️${state.currentMoves} 🕥${timer.value()}`;
 }
 
@@ -39,6 +41,33 @@ function notify(emoji, targetElement) {
 	emojiElement.addEventListener('animationend', () => {
 		emojiElement.remove();
 	});
+}
+
+function notifyKnockbackEcho(direction, sourceElement) {
+	const container = document.getElementById('notification-container');
+	const rect = sourceElement.getBoundingClientRect();
+
+	const el = document.createElement('div');
+	el.textContent = NINJA;
+	el.classList.add('knockback-echo');
+
+	const dist = rect.width * 2;
+	const translate = {
+		up:    `0px, -${dist}px`,
+		down:  `0px,  ${dist}px`,
+		left:  `-${dist}px, 0px`,
+		right: ` ${dist}px, 0px`,
+	};
+	el.style.setProperty('--kb-translate', translate[direction]);
+	el.style.width      = `${rect.width}px`;
+	el.style.height     = `${rect.height}px`;
+	el.style.fontSize   = `${rect.height * 0.8}px`;
+	el.style.lineHeight = `${rect.height}px`;
+	el.style.left       = `${rect.left}px`;
+	el.style.top        = `${rect.top}px`;
+
+	container.appendChild(el);
+	el.addEventListener('animationend', () => el.remove());
 }
 
 async function showModal(bodyText) {

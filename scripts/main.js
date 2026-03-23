@@ -47,13 +47,17 @@ async function main() {
 	}
 	generateBackground();
 
+	const ngPlusAvailable = localStorage.getItem('ngPlusUnlocked') === 'true' || devMode;
+	const onNgPlus = ngPlusAvailable ? () => startNewGamePlus() : null;
+
 	const menuPromise = showMainMenu(
 		saveLevel,
 		async () => {
 			const loaded = await loadGame();
 			if (!loaded) startNewGame();
 		},
-		() => startNewGame()
+		() => startNewGame(),
+		onNgPlus
 	);
 
 	await showModal(alertMessages.welcome);

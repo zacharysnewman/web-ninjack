@@ -230,7 +230,8 @@ button:disabled {
 }
 
 #menu-continue,
-#menu-new-game {
+#menu-new-game,
+#menu-ng-plus {
 	font-size: clamp(1.2rem, 5vmin, 2rem);
 	padding: 0.55em 2.2em;
 	background: #4caf50;
@@ -246,13 +247,15 @@ button:disabled {
 }
 
 #menu-continue:hover,
-#menu-new-game:hover {
+#menu-new-game:hover,
+#menu-ng-plus:hover {
 	background: #66bb6a;
 	transform: scale(1.06);
 	box-shadow: 0 6px 18px rgba(0,0,0,0.45);
 }
 #menu-continue:active,
-#menu-new-game:active { transform: scale(0.97); }
+#menu-new-game:active,
+#menu-ng-plus:active { transform: scale(0.97); }
 
 /* ── Skin Dropdown ── */
 .skin-dropdown-wrapper {
@@ -321,3 +324,14 @@ button:disabled {
 
 .skin-option.skin-selected { border-color: gold; background: rgba(0, 100, 0, 0.8); }
 .skin-option:hover { border-color: forestgreen; background: rgba(0,80,0,0.5); }
+
+@keyframes knockbackEcho {
+	0%   { transform: translate(0, 0);                   opacity: 0.55; }
+	100% { transform: translate(var(--kb-translate));     opacity: 0;    }
+}
+
+.knockback-echo {
+	position: absolute;
+	pointer-events: none;
+	animation: knockbackEcho 0.25s ease-out forwards;
+}
