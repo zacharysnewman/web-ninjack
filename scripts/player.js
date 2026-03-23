@@ -5,6 +5,10 @@ function checkForMissingKey() {
 	const hasKey = state.grid.some(row => row.includes(KEY));
 	if (hasKey) return;
 
+	// Only give a key if a door actually exists on the board (level 10+ has none)
+	const hasDoor = state.grid.some(row => row.includes(DOOR));
+	if (!hasDoor) return;
+
 	if (state.doorLocked && state.currentKeys < 1) {
 		state.giveKey();
 		updateGoldDisplay();
@@ -91,7 +95,7 @@ function interactWithCrabOrBoss(newX, newY, dir) {
 			killCrab(newX, newY);
 			notify(SKULL, crabEl);
 			if (isBoss) {
-				handleBossKill();
+				handleBossKill(newX, newY);
 			} else {
 				const loot = state.drawCrabLoot() || '';
 				setGridTile(newX, newY, loot);
@@ -155,16 +159,10 @@ function interactWithVegetation(newX, newY) {
 	const isRock = tileValue === ROCK;
 	const revealedTile = isRock ? state.drawRockLoot() : state.drawLoot();
 
-	if (isRock) state.removeRock(newX, newY);
-
-	// House key is collected directly from a tree (final loot slot on level 10+)
-	if (revealedTile === HOUSE_KEY) {
-		state.giveHouseKey();
-		updateGoldDisplay();
-		notify(TREE_NG, getTileElement(newX, newY));
-		setGridTile(newX, newY, '');
-		handleFinalBossNG();
-		return false;
+	if (isRock) {
+		state.removeRock(newX, newY);
+		// Last rock cleared on NG+ level 10 — MOAI awakens
+		if (state.rocks.length === 0) handleMoaiActivate();
 	}
 
 	if (revealedTile === SNAKE) addSnake(newX, newY);
@@ -189,7 +187,10 @@ function interactWithOpenTile(newX, newY, dir) {
 	}
 	else if (tileValue === HEART)     { collectItem(newX, newY, HEART, () => state.heal()); }
 	else if (tileValue === KEY)       { collectItem(newX, newY, KEY,   () => state.giveKey()); }
-	else if (tileValue === CHUTE) {
+	else if (tileValue === HOUSE_KEY) {
+		collectItem(newX, newY, HOUSE_KEY, () => state.giveHouseKey());
+		handleHouseKeyPickup();
+	} else if (tileValue === CHUTE) {
 		collectItem(newX, newY, CHUTE, () => state.giveChute());
 		handleFinalBoss();
 	} else if (tileValue === SNAKE) {
@@ -223,7 +224,17 @@ function move(direction) {
 	if (tileValue === HOUSE) {
 		if (interactWithHouse(newX, newY)) return;
 	} else if (tileValue === HOUSE_DAMAGED) {
-		// Impassable during boss fight — player stays, enemies still move
+		if (state.houseKeys > 0) {
+			// Player has the key — repair and unlock the house
+			notify(UNLOCK, getTileElement(newX, newY));
+			setGridTile(newX, newY, HOUSE);
+			state.unlockHouse();
+			state.resetHouseKeys();
+			updateGoldDisplay();
+		}
+		// If no key: impassable — player stays, enemies still move
+	} else if (tileValue === MOAI) {
+		// Indestructible — player stays put
 	} else if (tileValue === DOOR) {
 		if (interactWithDoor(newX, newY)) return;
 	} else if (tileValue === TREE || tileValue === TREE_NG || tileValue === ROCK) {

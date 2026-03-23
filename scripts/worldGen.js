@@ -19,12 +19,12 @@ function pickHolePositions(count) {
 }
 
 function generateTileTable() {
-	// NG+ uses 2 special tiles (1 hole + 1 house); normal uses 1 hole
-	const specialCount = state.ngPlus ? 2 : 1;
+	// NG+ level 10 uses 3 special tiles (hole + house + moai); NG+ others use 2; normal uses 1
+	const specialCount = state.ngPlus ? (state.currentLevel === 9 ? 3 : 2) : 1;
 	const treeCount = totalTiles - playerCount - specialCount - rockCount;
 	const rockTiles = Array(rockCount).fill(ROCK);
 	const treeTiles = Array(treeCount).fill(state.ngPlus ? TREE_NG : TREE);
-	// Holes/house are placed separately via pickHolePositions — not in the tile table
+	// Special tiles are placed separately via pickHolePositions — not in the tile table
 	return [...rockTiles, ...treeTiles];
 }
 
@@ -74,8 +74,9 @@ function generateCrabLootTable() {
 
 function generateLootTable(chuteCount, doorCount, keyCount, houseKeyCount = 0) {
 	if (state.ngPlus) {
-		const specialCount = 2; // 1 hole + 1 house
-		const treeCount = totalTiles - playerCount - specialCount - rockCount; // 63
+		// Level 10+ has 3 specials (hole + house + moai), others have 2
+		const specialCount = state.currentLevel === 9 ? 3 : 2;
+		const treeCount = totalTiles - playerCount - specialCount - rockCount;
 		const displayLevel = state.currentLevel + 1; // 1–10
 		const crabsInTrees = displayLevel;
 		const snakesInTrees = Math.max(0, Math.min(4 + displayLevel, 10 - displayLevel));
@@ -145,11 +146,13 @@ function generateWorld() {
 	state.clearCrabs();
 	state.resetGrid();
 
-	// NG+ gets 1 hole + 1 house; normal gets 1 hole
-	const specialCount = state.ngPlus ? 2 : 1;
+	// NG+ level 10 gets hole + house + moai; other NG+ gets hole + house; normal gets hole
+	const isFinalNgPlus = state.ngPlus && state.currentLevel === 9;
+	const specialCount = isFinalNgPlus ? 3 : (state.ngPlus ? 2 : 1);
 	const specialPositions = pickHolePositions(specialCount);
 	const holeKey = `${specialPositions[0].x},${specialPositions[0].y}`;
 	const houseKey = state.ngPlus ? `${specialPositions[1].x},${specialPositions[1].y}` : null;
+	const moaiKey = isFinalNgPlus ? `${specialPositions[2].x},${specialPositions[2].y}` : null;
 	const specialSet = new Set(specialPositions.map(p => `${p.x},${p.y}`));
 
 	const world = document.getElementById('world');
@@ -167,7 +170,7 @@ function generateWorld() {
 			if (x === state.playerX && y === state.playerY) {
 				value = NINJA;
 			} else if (specialSet.has(key)) {
-				value = key === houseKey ? HOUSE : HOLE;
+				value = key === houseKey ? HOUSE : key === moaiKey ? MOAI : HOLE;
 			} else {
 				value = state.currentTileTable[tileIndex++];
 			}

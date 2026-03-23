@@ -69,8 +69,17 @@ function handleFinalBoss() {
 	state.clearRocks();
 }
 
-// NG+ (level 10+): house is damaged, rocks burst as crabs + 1 boss scorpion
-function handleFinalBossNG() {
+// NG+ (level 10+): called when the last rock is cleared — MOAI awakens as scorpion
+function handleMoaiActivate() {
+	let moaiX = -1, moaiY = -1;
+	outer:
+	for (let y = 0; y < worldSize; y++) {
+		for (let x = 0; x < worldSize; x++) {
+			if (getGridTile(x, y) === MOAI) { moaiX = x; moaiY = y; break outer; }
+		}
+	}
+	if (moaiX === -1) return; // no MOAI on this level
+
 	// Transition house: HOUSE → HOUSE_DAMAGED
 	for (let y = 0; y < worldSize; y++) {
 		for (let x = 0; x < worldSize; x++) {
@@ -82,43 +91,38 @@ function handleFinalBossNG() {
 		}
 	}
 
-	if (state.rocks.length === 0) return;
-
-	// Shuffle rocks, first becomes the boss scorpion, rest become crabs
-	const shuffledRocks = [...state.rocks].sort(() => Math.random() - 0.5);
-	shuffledRocks.forEach((rock, i) => {
-		notify(ROCK, getTileElement(rock.x, rock.y));
-		if (i === 0) {
-			setGridTile(rock.x, rock.y, SCORPION);
-			addBoss(rock.x, rock.y);
-		} else {
-			setGridTile(rock.x, rock.y, CRAB);
-			addCrab(rock.x, rock.y);
-		}
-	});
-	state.clearRocks();
+	// MOAI transforms into the boss scorpion
+	notify(MOAI, getTileElement(moaiX, moaiY));
+	setGridTile(moaiX, moaiY, SCORPION);
+	addBoss(moaiX, moaiY);
 }
 
-// Called when player kills the boss scorpion: sweep board, restore house
-function handleBossKill() {
-	// Remove all remaining crabs (no loot)
+// Called when player kills the boss scorpion: sweep board, drop house key
+function handleBossKill(x, y) {
+	// Remove all remaining crabs and snakes (no loot)
 	for (const crab of [...state.crabs]) {
 		setGridTile(crab.x, crab.y, '');
 		state.removeCrab(crab.x, crab.y);
 	}
-	// Remove all remaining snakes (no loot)
 	for (const snake of [...state.snakes]) {
 		setGridTile(snake.x, snake.y, '');
 		state.removeSnake(snake.x, snake.y);
 	}
-	// Transition house: HOUSE_DAMAGED → HOUSE, now unlockable
+	// Drop the house key where the scorpion died
+	setGridTile(x, y, HOUSE_KEY);
+	notify(HOUSE_KEY, getTileElement(x, y));
+}
+
+// Called when player picks up the house key: auto-clear all trees, leaving loot/enemies
+function handleHouseKeyPickup() {
 	for (let y = 0; y < worldSize; y++) {
 		for (let x = 0; x < worldSize; x++) {
-			if (getGridTile(x, y) === HOUSE_DAMAGED) {
-				notify('⚡️', getTileElement(x, y));
-				setGridTile(x, y, HOUSE);
-				state.unlockHouse();
-				return;
+			if (getGridTile(x, y) === TREE_NG) {
+				const loot = state.drawLoot() || '';
+				if (loot === SNAKE) addSnake(x, y);
+				else if (loot === CRAB) addCrab(x, y);
+				setGridTile(x, y, loot);
+				notify(TREE_NG, getTileElement(x, y));
 			}
 		}
 	}
@@ -202,8 +206,8 @@ function advanceLevel() {
 	const isFinalLevel = state.currentLevel === 9;
 	let chuteCount, doorCount, keyCount, houseKeyCount;
 	if (isFinalLevel && state.ngPlus) {
-		// Level 10+: house key replaces chute; hole is lethal; no door/key
-		chuteCount = 0; doorCount = 0; keyCount = 0; houseKeyCount = 1;
+		// Level 10+: MOAI/scorpion drops house key; no door/key/chute in loot table
+		chuteCount = 0; doorCount = 0; keyCount = 0; houseKeyCount = 0;
 	} else if (isFinalLevel) {
 		// Level 10 normal: chute triggers boss, no door/key
 		chuteCount = 1; doorCount = 0; keyCount = 0; houseKeyCount = 0;
