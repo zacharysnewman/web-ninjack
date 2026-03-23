@@ -67,6 +67,48 @@ The enemy currently displayed as 🦂 (scorpion) should be displayed as 🦀 (cr
 
 ---
 
+## NG+ Trees Should Use Deciduous Emoji (🌳)
+
+**Description:**
+In New Game+, trees should display as 🌳 instead of 🌲 to visually distinguish NG+ from normal mode.
+
+**Root Cause:**
+`TREE = "🌲"` is a single constant in `constants.js:5` used everywhere. NG+ needs its own tree constant (e.g. `TREE_NG = "🌳"`) and all world-generation, rendering, and interaction code needs to use `TREE_NG` when `state.ngPlus` is true. Affected logic includes `generateTileTable()`, `generateWorld()`, `interactWithVegetation()` (reveal notification), `canSnakeMoveToTile()`, `canScorpionMoveToTile()`, and the `tileValue === TREE` check in `handleMove()`.
+
+**Affected Files:**
+- `scripts/constants.js` — add `TREE_NG = "🌳"`
+- `scripts/worldGen.js` — `generateTileTable()`, `generateWorld()`
+- `scripts/player.js` — `interactWithVegetation()`, `handleMove()`
+- `scripts/snake.js` — `canSnakeMoveToTile()`, `canScorpionMoveToTile()`
+
+---
+
+## NG+ Should Have 1 Hole + 1 House (🏡) Instead of 2 Holes
+
+**Description:**
+In New Game+, the second hole should be replaced by a house tile 🏡. The house acts like a locked door — the player cannot enter it until they hold the house key 🗝️. The house key is only available on Level 10+ and spawns exclusively from a rock whose loot is a crab (i.e. only one specific rock on that level drops the house key instead of its normal rock-loot crab). On all other NG+ levels (1+–9+) the house is present but the key is unobtainable, so it cannot be entered.
+
+**Details:**
+- Normal NG+ levels (1+–9+): world has 1 hole + 1 house; house key does not exist yet → house is permanently locked that run.
+- Level 10+: one of the rocks that would spawn a crab instead drops a 🗝️ house key; collecting it unlocks the house.
+- Entering the unlocked house triggers the NG+ win condition (same as the hole/chute win today).
+- The house key 🗝️ is a distinct constant from the regular door key 🔑 (`KEY`).
+- Enemies (snakes, crabs) should not be able to move onto the house tile.
+
+**Root Cause:**
+`worldGen.js:22` and `worldGen.js:123` use `holeCount = state.ngPlus ? 2 : 1`, placing two `HOLE` tiles. There is no `HOUSE` constant, no house-placement logic, no house-key constant, no house interaction handler, and no rock-loot override for level 10+.
+
+**Affected Files:**
+- `scripts/constants.js` — add `HOUSE = "🏡"`, `HOUSE_KEY = "🗝️"`
+- `scripts/worldGen.js` — `generateTileTable()`, `generateWorld()` (place 1 hole + 1 house in NG+); `generateRockLootTable()` (inject house key at level 10+)
+- `scripts/player.js` — add `interactWithHouse()` handler; update `handleMove()` to dispatch on `HOUSE`; add house-key collect path
+- `scripts/snake.js` — add `HOUSE` to blocked tiles in `canSnakeMoveToTile()` and `canScorpionMoveToTile()`
+- `scripts/state.js` — track house-locked state and house-key inventory
+- `scripts/ui.js` — show house key in inventory when held
+- `scripts/save.js` — persist house-locked state and house-key count
+
+---
+
 ## NG+ Tree Enemy Spawn Counts Are Wrong
 
 **Description:**
