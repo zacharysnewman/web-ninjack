@@ -1,7 +1,7 @@
 const SKIN_OPTIONS = ['🥷', '🥷🏻', '🥷🏼', '🥷🏽', '🥷🏾', '🥷🏿'];
 const SKIN_KEY = 'ninjaSkin';
 
-function showMainMenu(saveLevel = null, onContinue = null, onNewGame = () => {}, onNgPlus = null) {
+function showMainMenu(saveLevel = null, onContinue = null, onNewGame = () => {}, onNgPlus = null, ngPlusLabel = 'New Game+') {
 	state.setButtonsDisabled(true);
 	return new Promise(resolve => {
 		const menu = document.createElement('div');
@@ -13,7 +13,7 @@ function showMainMenu(saveLevel = null, onContinue = null, onNewGame = () => {},
 		let buttonsHtml = '';
 		if (hasSave) buttonsHtml += `<button id="menu-continue">Continue at Level ${saveLevel}</button>`;
 		buttonsHtml += `<button id="menu-new-game">New Game</button>`;
-		if (hasNgPlus) buttonsHtml += `<button id="menu-ng-plus">New Game+</button>`;
+		if (hasNgPlus) buttonsHtml += `<button id="menu-ng-plus">${ngPlusLabel}</button>`;
 
 		if (devMode) {
 			const levelOptions = Array.from({ length: 10 }, (_, i) =>
