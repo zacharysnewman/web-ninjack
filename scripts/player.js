@@ -225,7 +225,7 @@ function move(direction) {
 		if (interactWithHouse(newX, newY)) return;
 	} else if (tileValue === HOUSE_DAMAGED) {
 		if (state.houseKeys > 0) {
-			// Player has the key — repair and unlock the house
+			// Player has the key — unlock the house
 			notify(UNLOCK, getTileElement(newX, newY));
 			setGridTile(newX, newY, HOUSE);
 			state.unlockHouse();

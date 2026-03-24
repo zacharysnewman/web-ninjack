@@ -18,9 +18,8 @@ function debugSkipToLevel(targetLevel, ngPlus) {
 	timer.start();
 	const isFinal = targetLevel === 10;
 	let chuteCount = 0, doorCount = 0, keyCount = 0, houseKeyCount = 0;
-	if (isFinal && ngPlus)    { houseKeyCount = 1; }
-	else if (isFinal)         { chuteCount = 1; }
-	else                      { doorCount = 1; keyCount = 1; }
+	if (isFinal)              { chuteCount = 1; }
+	else if (!ngPlus)         { doorCount = 1; keyCount = 1; }
 	setupLevel(chuteCount, doorCount, keyCount, houseKeyCount);
 	saveGame();
 }
@@ -79,17 +78,6 @@ function handleMoaiActivate() {
 		}
 	}
 	if (moaiX === -1) return; // no MOAI on this level
-
-	// Transition house: HOUSE → HOUSE_DAMAGED
-	for (let y = 0; y < worldSize; y++) {
-		for (let x = 0; x < worldSize; x++) {
-			if (getGridTile(x, y) === HOUSE) {
-				notify('⚡️', getTileElement(x, y));
-				setGridTile(x, y, HOUSE_DAMAGED);
-				break;
-			}
-		}
-	}
 
 	// MOAI transforms into the boss scorpion
 	notify(MOAI, getTileElement(moaiX, moaiY));
