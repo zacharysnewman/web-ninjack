@@ -170,7 +170,7 @@ function generateWorld() {
 			if (x === state.playerX && y === state.playerY) {
 				value = NINJA;
 			} else if (specialSet.has(key)) {
-				value = key === houseKey ? HOUSE : key === moaiKey ? MOAI : HOLE;
+				value = key === houseKey ? HOUSE_DAMAGED : key === moaiKey ? MOAI : HOLE;
 			} else {
 				value = state.currentTileTable[tileIndex++];
 			}
