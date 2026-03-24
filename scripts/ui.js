@@ -48,12 +48,12 @@ function notify(emoji, targetElement) {
 	});
 }
 
-function notifyKnockbackEcho(direction, sourceElement) {
+function notifyEcho(emoji, direction, sourceElement) {
 	const container = document.getElementById('notification-container');
 	const rect = sourceElement.getBoundingClientRect();
 
 	const el = document.createElement('div');
-	el.textContent = NINJA;
+	el.textContent = emoji;
 	el.classList.add('knockback-echo');
 
 	const dist = rect.width * 2;
@@ -73,6 +73,10 @@ function notifyKnockbackEcho(direction, sourceElement) {
 
 	container.appendChild(el);
 	el.addEventListener('animationend', () => el.remove());
+}
+
+function notifyKnockbackEcho(direction, sourceElement) {
+	notifyEcho(NINJA, direction, sourceElement);
 }
 
 async function showModal(bodyText) {

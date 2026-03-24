@@ -44,10 +44,23 @@ function crabMove(crab, newX, newY) {
 		return;
 	}
 	if (!canCrabMoveToTile(newX, newY)) return;
+	// Boss scorpion can't fall into the hole — it must be killed by the player
+	if (crab.tile === SCORPION && getGridTile(newX, newY) === HOLE) return;
 
 	const tileValue = getGridTile(newX, newY);
 	const isHole = tileValue === HOLE;
 	const isPlayer = tileValue === NINJA;
+
+	// Scorpion lunges in place — show echo toward player, don't move
+	if (crab.tile === SCORPION && isPlayer) {
+		const dx = newX - crab.x, dy = newY - crab.y;
+		const dir = dx > 0 ? 'right' : dx < 0 ? 'left' : dy > 0 ? 'down' : 'up';
+		notifyEcho(SCORPION, dir, getTileElement(crab.x, crab.y));
+		if (state.currentHealth <= 2) notify(SKULL, getTileElement(newX, newY));
+		handleDamage(2, newX, newY);
+		return;
+	}
+
 	const shouldDie = isHole || (isPlayer && state.currentHealth > 2);
 
 	if (isPlayer) {
