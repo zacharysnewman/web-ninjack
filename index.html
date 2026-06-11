@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-capable" content="yes">
+	<script>
+		(function() {
+			var sp = new URLSearchParams(location.search);
+			if (sp.has('gold')) { location.replace('gold.html'); return; }
+			if (sp.has('cave-plan')) { location.replace('cave-plan.html'); return; }
+			if (sp.has('animations')) { location.replace('animations.html'); return; }
+			if (sp.get('controls') === 'true') location.replace('controls.html');
+		})();
+	</script>
+        <title>Ninjack</title>
+  <script type="module" crossorigin src="/web-ninjack/assets/main-DOdzzl4W.js"></script>
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/modulepreload-polyfill-Dezn_h7o.js">
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/constants-Dx2mc2Y9.js">
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/controls-render-DNqHQ-rT.js">
+  <link rel="stylesheet" crossorigin href="/web-ninjack/assets/main-BRg9nTxJ.css">
+</head>
+<body class="noselect" role="application">
+	<div class="outlined game-title" id="game-title">Ninjack</div>
+	<div class="game">
+		<div class="menu-bar">
+			<div class="outlined menu-section inventory" id="inventory"></div>
+			<div class="outlined menu-section inventory" id="stats"></div>
+		</div>
+		<div id="world"></div>
+	</div>
+	<div id="notification-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+	<div id="controls"></div>
+	<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics-compat.js"></script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Animations – Ninjack</title>
+    <style>
+        :root { --fire-flip-ms: 200; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #0a280a;
+            color: #eee;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            padding-bottom: 56px;
+        }
+        header {
+            background: rgba(0,0,0,0.45);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        header a { color: #88cc88; text-decoration: none; font-size: 0.9rem; }
+        header h1 { color: #FFD700; font-size: 1.2rem; font-weight: bold; letter-spacing: 0.03em; }
+        .content {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+        .section-label {
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.35);
+            margin-bottom: 10px;
+        }
+        .preview-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        .preview-tile {
+            width: 72px;
+            height: 72px;
+            font-size: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a1a;
+            border: 1px solid #0f0f0f;
+            border-radius: 4px;
+        }
+        @keyframes fireFlip {
+            0%   { transform: scaleX(1); }
+            50%  { transform: scaleX(-1); }
+            100% { transform: scaleX(1); }
+        }
+        .preview-tile.fire {
+            animation: fireFlip calc(var(--fire-flip-ms) * 2ms) steps(1, end) infinite;
+        }
+        .control-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 14px;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .control-label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+            min-width: 80px;
+        }
+        input[type=range] {
+            flex: 1;
+            accent-color: #4caf50;
+            height: 6px;
+            cursor: pointer;
+        }
+        input[type=number] {
+            width: 72px;
+            padding: 6px 8px;
+            background: rgba(10, 60, 10, 0.9);
+            border: 1px solid #2d7a2d;
+            border-radius: 8px;
+            color: #eee;
+            font-size: 0.9rem;
+            font-family: Arial, sans-serif;
+            text-align: right;
+        }
+        .unit-label {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.35);
+            width: 20px;
+        }
+        .reset-btn {
+            align-self: flex-start;
+            padding: 6px 16px;
+            background: rgba(30, 80, 30, 0.9);
+            color: #ccffcc;
+            border: 1px solid rgba(45, 122, 45, 0.6);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: Arial, sans-serif;
+        }
+        .reset-btn:hover { background: rgba(50, 110, 50, 0.9); }
+    </style>
+  <script type="module" crossorigin src="/web-ninjack/assets/animations-BF9Wre5I.js"></script>
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/modulepreload-polyfill-Dezn_h7o.js">
+</head>
+<body>
+    <header>
+        <a href="index.html">← Back</a>
+        <h1>🎬 Animations</h1>
+    </header>
+    <div class="content">
+        <section>
+            <div class="section-label">Fire Tile — Preview</div>
+            <div class="preview-row">
+                <div class="preview-tile fire">🔥</div>
+                <div class="preview-tile fire">🔥</div>
+                <div class="preview-tile fire">🔥</div>
+            </div>
+        </section>
+        <section>
+            <div class="section-label">Flip Timing</div>
+            <div class="control-card">
+                <div class="control-row">
+                    <span class="control-label">🔥 Fire flip</span>
+                    <input type="range" id="fire-slider" min="50" max="1000" step="10">
+                    <input type="number" id="fire-number" min="50" max="1000" step="10">
+                    <span class="unit-label">ms</span>
+                </div>
+                <button class="reset-btn" id="reset-btn">Reset to Default</button>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+function e(e,n,r,i=()=>!1){if(!n)return;let a={up:`▲`,down:`▼`,left:`<span class="ctrl-arrow-left">▲</span>`,right:`<span class="ctrl-arrow-right">▲</span>`},o=e=>`<button class="ctrl-btn" data-dir="${e}">${a[e]}</button>`;switch(e){case`invt`:n.innerHTML=`<div class="ctrl-invt">
+        <div class="ctrl-noop"></div>${o(`up`)}<div class="ctrl-noop"></div>
+        ${o(`left`)}${o(`down`)}${o(`right`)}</div>`;break;case`linear`:n.innerHTML=`<div class="ctrl-linear">
+        ${o(`left`)}${o(`down`)}<div class="ctrl-linear-gap"></div>${o(`up`)}${o(`right`)}</div>`;break;case`split`:n.innerHTML=`<div class="ctrl-split">
+        <div class="ctrl-split-vert">${o(`up`)}${o(`down`)}</div>
+        <div class="ctrl-split-horiz">${o(`left`)}${o(`right`)}</div>
+      </div>`;break;case`split-lefty`:n.innerHTML=`<div class="ctrl-split">
+        <div class="ctrl-split-horiz">${o(`left`)}${o(`right`)}</div>
+        <div class="ctrl-split-vert">${o(`up`)}${o(`down`)}</div>
+      </div>`;break;case`joystick`:n.innerHTML=`<div class="ctrl-joystick-base">
+        <div class="ctrl-joystick-knob"></div></div>`,t(n.querySelector(`.ctrl-joystick-base`),r,i);break;default:n.innerHTML=`<div class="ctrl-cross">
+        <div class="ctrl-noop"></div>${o(`up`)}<div class="ctrl-noop"></div>
+        ${o(`left`)}<div class="ctrl-hub"></div>${o(`right`)}
+        <div class="ctrl-noop"></div>${o(`down`)}<div class="ctrl-noop"></div></div>`}n.querySelectorAll(`[data-dir]`).forEach(e=>{e.addEventListener(`pointerdown`,t=>{t.preventDefault(),i()||r(e.dataset.dir)})});let s=n;s._padDelegation&&n.removeEventListener(`pointerdown`,s._padDelegation),s._padDelegation=e=>{if(e.target.closest(`[data-dir]`))return;e.preventDefault();let t=[...n.querySelectorAll(`[data-dir]`)],a=1/0,o=null;for(let n of t){let t=n.getBoundingClientRect(),r=Math.hypot(t.left+t.width/2-e.clientX,t.top+t.height/2-e.clientY);r<a&&(a=r,o=n)}o&&a<65&&!i()&&(o.classList.add(`ctrl-btn--flash`),setTimeout(()=>o.classList.remove(`ctrl-btn--flash`),120),r(o.dataset.dir))},n.addEventListener(`pointerdown`,s._padDelegation)}function t(e,t,n){let r=e.querySelector(`.ctrl-joystick-knob`),i=!1,a=0,o=0,s=null;function c(e,t){return Math.sqrt(e*e+t*t)<16?null:Math.abs(e)>Math.abs(t)?e>0?`right`:`left`:t>0?`down`:`up`}e.addEventListener(`pointerdown`,t=>{t.preventDefault(),i=!0;let n=e.getBoundingClientRect();a=n.left+n.width/2,o=n.top+n.height/2,e.setPointerCapture(t.pointerId)}),e.addEventListener(`pointermove`,e=>{if(!i)return;let l=e.clientX-a,u=e.clientY-o,d=Math.sqrt(l*l+u*u),f=Math.atan2(u,l);r.style.transform=`translate(${Math.cos(f)*Math.min(d,44)}px, ${Math.sin(f)*Math.min(d,44)}px)`;let p=c(l,u);p&&p!==s&&!n()&&t(p),s=p});function l(){i=!1,s=null,r.style.transform=`translate(0, 0)`}e.addEventListener(`pointerup`,l),e.addEventListener(`pointercancel`,l)}export{e as t};

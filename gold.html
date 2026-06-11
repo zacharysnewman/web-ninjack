@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Gold Dashboard – Ninjack</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #0a280a;
+            color: #eee;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            padding-bottom: 56px;
+        }
+        header {
+            background: rgba(0,0,0,0.45);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        header a { color: #88cc88; text-decoration: none; font-size: 0.9rem; }
+        header h1 { color: #FFD700; font-size: 1.2rem; font-weight: bold; letter-spacing: 0.03em; }
+
+        .content {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .section-label {
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.35);
+            margin-bottom: 10px;
+        }
+
+        /* ── Pickup stat cards ── */
+        .pickup-cards {
+            display: flex;
+            gap: 10px;
+        }
+        .pickup-card {
+            flex: 1;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 14px;
+            padding: 14px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .pickup-card-emoji { font-size: 1.6rem; line-height: 1; }
+        .pickup-card-count { font-size: 0.75rem; color: rgba(255,255,255,0.45); }
+        .pickup-card-gold { font-size: 1.4rem; font-weight: bold; color: #FFD700; line-height: 1; }
+        .pickup-card-gold span { font-size: 0.8rem; color: rgba(255,255,255,0.35); font-weight: normal; }
+        .pickup-card.total {
+            border-color: rgba(255,215,0,0.25);
+            background: rgba(255,215,0,0.06);
+        }
+        .pickup-card.total .pickup-card-gold { font-size: 1.8rem; }
+
+        /* ── Info card ── */
+        .info-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.82rem;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row-label { color: rgba(255,255,255,0.6); }
+        .info-row-value { color: #88cc88; font-weight: bold; font-variant-numeric: tabular-nums; }
+        .info-row-value.gold { color: #FFD700; }
+        .info-row-value.total { color: #FFD700; font-size: 1.1em; }
+        .info-row-note { color: rgba(255,255,255,0.28); font-size: 0.72rem; margin-left: 6px; font-weight: normal; }
+        .info-row.divider { background: rgba(255,215,0,0.05); border-top: 1px solid rgba(255,215,0,0.15); }
+
+        /* ── Table ── */
+        .table-wrap {
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.09);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            font-variant-numeric: tabular-nums;
+        }
+        thead {
+            background: rgba(0,0,0,0.4);
+        }
+        thead th {
+            padding: 9px 10px;
+            text-align: right;
+            white-space: nowrap;
+            font-size: 0.67rem;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+        }
+        thead th:first-child { text-align: center; }
+        tbody tr {
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        tbody tr:hover { background: rgba(255,255,255,0.03); }
+        tbody td {
+            padding: 9px 10px;
+            text-align: right;
+            color: #bbb;
+            white-space: nowrap;
+        }
+        tbody td:first-child {
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+        }
+        tbody td.em { color: #eee; }
+        tbody td.gold { color: #FFD700; font-weight: bold; }
+        tbody td.dimmed { color: rgba(255,255,255,0.28); }
+
+        .note {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.32);
+            line-height: 1.55;
+            padding: 0 2px;
+        }
+        .note strong { color: rgba(255,255,255,0.5); }
+
+        /* ── Legend ── */
+        #legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 12px;
+            padding: 10px 14px;
+            flex: 1;
+            min-width: 100px;
+        }
+        .legend-emoji { font-size: 1.5rem; line-height: 1; }
+        .legend-name { font-size: 0.75rem; color: rgba(255,255,255,0.4); flex: 1; }
+        .legend-value { font-size: 1.05rem; font-weight: bold; color: #FFD700; }
+    </style>
+  <script type="module" crossorigin src="/web-ninjack/assets/gold-D-5s2FRo.js"></script>
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/modulepreload-polyfill-Dezn_h7o.js">
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/constants-Dx2mc2Y9.js">
+</head>
+<body>
+    <header>
+        <a href="index.html">← Back</a>
+        <h1>💰 Gold Dashboard</h1>
+    </header>
+
+    <div class="content">
+
+        <!-- ── Legend ── -->
+        <section>
+            <div class="section-label">Item Values</div>
+            <div id="legend"></div>
+        </section>
+
+        <!-- ── Section 1: Pickups only ── -->
+        <section>
+            <div class="section-label">Pickups (Trees) — same every level</div>
+            <div class="pickup-cards">
+                <div class="pickup-card">
+                    <div class="pickup-card-emoji">🪙</div>
+                    <div class="pickup-card-count">7 coins × 1g</div>
+                    <div class="pickup-card-gold">7 <span>g</span></div>
+                </div>
+                <div class="pickup-card">
+                    <div class="pickup-card-emoji">💎</div>
+                    <div class="pickup-card-count">1 gem × 10g</div>
+                    <div class="pickup-card-gold">10 <span>g</span></div>
+                </div>
+                <div class="pickup-card total">
+                    <div class="pickup-card-emoji">🏆</div>
+                    <div class="pickup-card-count">pickup total</div>
+                    <div class="pickup-card-gold">17 <span>g</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Section 2: Snakes in rocks ── -->
+        <section>
+            <div class="section-label">Snakes in Rocks — same every level</div>
+            <div class="info-card">
+                <div class="info-row">
+                    <span class="info-row-label">🪨 Rocks per level</span>
+                    <span class="info-row-value">15</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row-label">🐍 Snakes hidden in rocks</span>
+                    <span class="info-row-value">13 <span class="info-row-note">(15 rocks − 2 ❤️ hearts)</span></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row-label">🗡 Max swords per level</span>
+                    <span class="info-row-value">5 <span class="info-row-note">(5 × 🗡 in trees)</span></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row-label">Max sword kills on rock 🐍</span>
+                    <span class="info-row-value">5 <span class="info-row-note">(swords &lt; 13 snakes)</span></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row-label">💰 Gold per sword kill (best case)</span>
+                    <span class="info-row-value gold">5g</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row-label">Max gold from rock snakes</span>
+                    <span class="info-row-value gold">25g <span class="info-row-note">(5 kills × 5g)</span></span>
+                </div>
+                <div class="info-row divider">
+                    <span class="info-row-label"><strong>Subtotal — pickups + rock snakes</strong></span>
+                    <span class="info-row-value total">42g</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Section 3: Table by level ── -->
+        <section>
+            <div class="section-label">Total by Level — with Tree Snakes</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Lvl</th>
+                            <th>Pickups</th>
+                            <th>Max 🗡</th>
+                            <th>Rock 🐍</th>
+                            <th>Tree 🐍</th>
+                            <th>All 🐍</th>
+                            <th>Kills</th>
+                            <th>🐍 Gold</th>
+                            <th>Total</th>
+                            <th>Cumulative</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gold-tbody"></tbody>
+                </table>
+            </div>
+            <p class="note" style="margin-top:10px">
+                <strong>Sword cap:</strong> max swords (5) &lt; min snakes (13 from rocks alone), so sword kills are always capped at 5.
+                Tree snakes grow each level but the ceiling stays at <strong>42g</strong> — more snakes, same max gold.
+            </p>
+        </section>
+
+        <!-- ── Section 4: Cave gate prices ── -->
+        <section>
+            <div class="section-label">🪨 Cave Gate Prices — between each level</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cave</th>
+                            <th>After Lvl</th>
+                            <th>Before Lvl</th>
+                            <th>Max Cum. Gold</th>
+                            <th>Gate Price</th>
+                            <th>Min Runs</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cave-tbody"></tbody>
+                </table>
+            </div>
+            <p class="note" style="margin-top:10px">
+                <strong>Formula:</strong> cumulative max gold × 5, rounded up to nearest 10.
+                Gate price always exceeds what a single run can earn — players accumulate gold across runs.
+                <strong>Min runs</strong> = ceil(gate price ÷ 42g max per run).
+                <a href="cave-plan.html" style="color:#88aacc; text-decoration:none;">→ Full cave plan</a>
+            </p>
+        </section>
+
+    </div>
+
+</body>
+</html>
