@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Cave Plan – Ninjack</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #111111;
+            color: #eee;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            padding-bottom: 56px;
+        }
+        header {
+            background: rgba(0,0,0,0.5);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        header a { color: #999999; text-decoration: none; font-size: 0.9rem; }
+        header h1 { color: #cccccc; font-size: 1.2rem; font-weight: bold; letter-spacing: 0.03em; }
+
+        .content {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .section-label {
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.35);
+            margin-bottom: 10px;
+        }
+
+        /* ── Info card ── */
+        .info-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.82rem;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row-label { color: rgba(255,255,255,0.6); }
+        .info-row-value { color: #999999; font-weight: bold; font-variant-numeric: tabular-nums; }
+        .info-row-value.accent { color: #cccccc; }
+        .info-row-value.gold { color: #FFD700; }
+        .info-row-note { color: rgba(255,255,255,0.28); font-size: 0.72rem; margin-left: 6px; font-weight: normal; }
+
+        /* ── Concept cards ── */
+        .concept-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .concept-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        .concept-icon { font-size: 1.8rem; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+        .concept-body { flex: 1; }
+        .concept-title { font-size: 0.88rem; font-weight: bold; color: #ccc; margin-bottom: 4px; }
+        .concept-desc { font-size: 0.78rem; color: rgba(255,255,255,0.5); line-height: 1.55; }
+
+        /* ── Room grid ── */
+        .room-wrap {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+            padding: 20px;
+        }
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 3px;
+            max-width: 360px;
+            margin: 0 auto;
+        }
+        .cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(18, 18, 18, 0.97);
+            border-radius: 5px;
+            font-size: clamp(0.7rem, 3vw, 1.1rem);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .cell.entrance {
+            background: rgba(60, 60, 60, 0.4);
+            border-color: rgba(180, 180, 180, 0.2);
+        }
+        .cell.exit {
+            background: rgba(70, 70, 70, 0.35);
+            border-color: rgba(200, 200, 200, 0.25);
+        }
+        .cell.monster {
+            background: rgba(200, 150, 0, 0.15);
+            border-color: rgba(255, 200, 0, 0.3);
+        }
+        .cell.hole {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: rgba(150, 100, 200, 0.3);
+        }
+        .cell.fire {
+            background: rgba(200, 60, 0, 0.25);
+            border-color: rgba(255, 120, 0, 0.4);
+        }
+        .room-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+            justify-content: center;
+        }
+        .room-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.45);
+        }
+
+        /* ── Table ── */
+        .table-wrap {
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.09);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            font-variant-numeric: tabular-nums;
+        }
+        thead {
+            background: rgba(0,0,0,0.4);
+        }
+        thead th {
+            padding: 9px 10px;
+            text-align: right;
+            white-space: nowrap;
+            font-size: 0.67rem;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+        }
+        thead th:first-child { text-align: center; }
+        tbody tr {
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        tbody tr:hover { background: rgba(255,255,255,0.03); }
+        tbody td {
+            padding: 9px 10px;
+            text-align: right;
+            color: #bbb;
+            white-space: nowrap;
+        }
+        tbody td:first-child {
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+        }
+        tbody td.em { color: #eee; }
+        tbody td.gold { color: #FFD700; font-weight: bold; }
+        tbody td.price { color: #ff9944; font-weight: bold; }
+        tbody td.runs { color: #88aacc; }
+
+        .note {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.32);
+            line-height: 1.55;
+            padding: 0 2px;
+        }
+        .note strong { color: rgba(255,255,255,0.5); }
+
+        /* ── Checklist ── */
+        .checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 9px 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.55);
+        }
+        .check-box {
+            width: 16px;
+            height: 16px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 4px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .check-item.done { color: rgba(255,255,255,0.3); }
+        .check-item.done .check-box {
+            background: rgba(100, 200, 100, 0.3);
+            border-color: rgba(100, 200, 100, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="index.html">← Back</a>
+        <h1>🪨 Cave Plan</h1>
+    </header>
+
+    <div class="content">
+
+        <!-- ── Concept ── -->
+        <section>
+            <div class="section-label">Concept</div>
+            <div class="concept-cards">
+                <div class="concept-card">
+                    <div class="concept-icon">🪨</div>
+                    <div class="concept-body">
+                        <div class="concept-title">Gate Room — Between Every Level</div>
+                        <div class="concept-desc">After clearing each forest level (1–9), the ninja enters a cave gate room. It does not count as a level. There is no fighting — just a toll checkpoint. Pay enough gold across runs to open the door and advance.</div>
+                    </div>
+                </div>
+                <div class="concept-card">
+                    <div class="concept-icon">🤑</div>
+                    <div class="concept-body">
+                        <div class="concept-title">Money Monster — Bump to Pay</div>
+                        <div class="concept-desc">Walking into the money monster contributes 10g at a time from the ninja's current run gold toward the gate goal. Bump repeatedly to drain your gold into the gate. Once the goal is fully funded the door unlocks.</div>
+                    </div>
+                </div>
+                <div class="concept-card">
+                    <div class="concept-icon">🕳️</div>
+                    <div class="concept-body">
+                        <div class="concept-title">Hole — Only Way Out (by dying)</div>
+                        <div class="concept-desc">If the gate isn't fully paid, the only exit is the hole. Stepping into it kills the ninja and ends the run. Contributions made this visit are saved — progress toward the gate persists between runs.</div>
+                    </div>
+                </div>
+                <div class="concept-card">
+                    <div class="concept-icon">📊</div>
+                    <div class="concept-body">
+                        <div class="concept-title">One Gate at a Time</div>
+                        <div class="concept-desc">Only the current gate's contribution total needs to be tracked. Gates unlock sequentially — you can't skip ahead. Once a gate is paid it stays open forever; no re-payment on future runs.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Flow ── -->
+        <section>
+            <div class="section-label">Run Flow</div>
+            <div class="info-card">
+                <div class="info-row">
+                    <span class="info-row-label">1. Enter cave</span>
+                    <span class="info-row-value accent">Spawn at bottom-middle with current run gold</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row-label">2. Bump 🤑 monster</span>
+                    <span class="info-row-value accent">Each bump: −10g from run, +10g toward gate goal</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row-label">3a. Gate fully funded</span>
+                    <span class="info-row-value gold">🤑 Monster dies — path to 🚪 door is clear; walk through</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row-label">3b. Gold exhausted / give up</span>
+                    <span class="info-row-value" style="color:#cc7755">🕳️ Step into hole — die, progress saved</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-row-label">Next run</span>
+                    <span class="info-row-value accent">Gate contribution total carries over; keep chipping away</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Room layout ── -->
+        <section>
+            <div class="section-label">Room Layout — 9 × 9</div>
+            <div class="room-wrap">
+                <div class="room-grid" id="cave-grid"></div>
+                <div class="room-legend">
+                    <span class="room-legend-item">🚪 Exit door (blocked by monster)</span>
+                    <span class="room-legend-item">🔥 Impassable fire — flanking door</span>
+                    <span class="room-legend-item">🤑 Monster — dies when paid</span>
+                    <span class="room-legend-item">🕳️ Hole — exit by dying</span>
+                    <span class="room-legend-item">🥷 Player spawn</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Gate prices ── -->
+        <section>
+            <div class="section-label">Gate Prices — formula: cumulative max gold × 5, rounded up to nearest 10</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cave</th>
+                            <th>After Lvl</th>
+                            <th>Before Lvl</th>
+                            <th>Max Cum. Gold</th>
+                            <th>Gate Price</th>
+                            <th>Min Runs</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cave-tbody"></tbody>
+                </table>
+            </div>
+            <p class="note" style="margin-top:10px">
+                <strong>Max per level:</strong> 17g pickups + 25g snake kills = 42g. Cumulative max at level N = N × 42g.<br>
+                <strong>Gate price:</strong> cumulative max × 5, rounded up to nearest 10.<br>
+                <strong>Min runs</strong> to afford the gate = ceil(gate price / 42g per level-1 run if farming level 1).
+            </p>
+        </section>
+
+        <!-- ── Implementation checklist ── -->
+        <section>
+            <div class="section-label">Implementation</div>
+            <div class="checklist">
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>Add <code>caveGoldContributed</code> and <code>currentGate</code> (1–9) to save state — both persist across runs, survive death and new game. <code>currentGate</code> identifies which gate the contribution belongs to so it can't be misapplied on a future run</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>After each forest level (1–9), transition to cave room instead of next level directly — fade to black, then fade in to cave</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>Walking through cave door to next forest level — fade to black, then fade in to forest. Player position carries over from their forest exit position (same existing mechanic); persist that position through the cave so it's still available when the next forest level loads</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>Render cave: 9×9, cave-wall border, entrance (4,8), door (4,0), fire walls (3,0)+(5,0), monster (4,1), hole (4,4)</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>Monster bump: contribute <code>min(runGold, 10, remainingNeeded)</code> per bump — capped so you never overpay, and the last bump can be less than 10g if that's all you have or all that's left</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>When <code>caveGoldContributed</code> reaches gate price: monster dies (removed from grid), path to door is clear</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>Walking through door: advance to next forest level; reset <code>caveGoldContributed</code> to 0 for next gate</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>Hole interaction: kills player (same as existing death flow), contributions already saved</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>If re-entering a cave where gate was already paid this run (continue save): render monster as dead, door walkable</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>When a save exists (game in progress), show only <strong>Continue</strong> on the main menu — hide New Game so the player can't accidentally discard their run</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>Delete New Game+ entirely — remove the NG+ game mode, all directly connected features (MOAI tile, house/house key tiles, NG+ snake variant), and any NG+ sound effects and save state fields</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>On bump with gold: play kaChing sound; float 💰 notify above the ninja (player tile)</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>On bump with 0 gold: play "nuh-uh" sound; float 💲 notify above the money monster tile</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-box"></div>
+                    <span>While in cave, swap inventory bar to <code>🚪{level} 🤑 {contributed}/{price}g</code>; stats bar unchanged — still shows <code>💰{runGold} ⏺️{moves} 🕥{timer}</code> (timer keeps running). Level shown is the one just completed — does not increment until the player walks through the door</span>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // ── Room grid ──
+        const WALL = '', DOOR = '🚪', MONSTER = '🤑', ENTER = '🥷', HOLE = '🕳️', FIRE = '🔥', EMPTY = '';
+        const grid = document.getElementById('cave-grid');
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                const cell = document.createElement('div');
+                const isEdge = row === 0 || row === 8 || col === 0 || col === 8;
+                const isTopMid  = row === 0 && col === 4;
+                const isBotMid  = row === 8 && col === 4;
+                const isMonster = row === 1 && col === 4;  // immediately below door
+                const isHole    = row === 4 && col === 4;  // center of room
+                // Fire walls immediately left and right of the door in the top wall row
+                const isFire    = row === 0 && (col === 3 || col === 5);
+
+                if (isTopMid) {
+                    cell.className = 'cell exit';
+                    cell.textContent = DOOR;
+                } else if (isFire) {
+                    cell.className = 'cell fire';
+                    cell.textContent = FIRE;
+                } else if (isBotMid) {
+                    cell.className = 'cell entrance';
+                    cell.textContent = ENTER;
+                } else if (isMonster) {
+                    cell.className = 'cell monster';
+                    cell.textContent = MONSTER;
+                } else if (isHole) {
+                    cell.className = 'cell hole';
+                    cell.textContent = HOLE;
+                } else if (isEdge) {
+                    cell.className = 'cell wall';
+                    cell.textContent = WALL;
+                } else {
+                    cell.className = 'cell';
+                    cell.textContent = EMPTY;
+                }
+                grid.appendChild(cell);
+            }
+        }
+
+        // ── Gate price table ──
+        const MAX_PER_LEVEL = 42;
+        const tbody = document.getElementById('cave-tbody');
+        let cumulative = 0;
+        for (let level = 1; level <= 9; level++) {
+            cumulative += MAX_PER_LEVEL;
+            const rawPrice = cumulative * 5;
+            const price = Math.ceil(rawPrice / 10) * 10;
+            const minRuns = Math.ceil(price / MAX_PER_LEVEL);
+            const tr = document.createElement('tr');
+            tr.innerHTML =
+                `<td>${level}</td>` +
+                `<td class="em">${level}</td>` +
+                `<td class="em">${level + 1}</td>` +
+                `<td class="gold">${cumulative}g</td>` +
+                `<td class="price">${price}g</td>` +
+                `<td class="runs">${minRuns}×</td>`;
+            tbody.appendChild(tr);
+        }
+    </script>
+</body>
+</html>

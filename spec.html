@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ninjack — Game Spec</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --surface2: #1e1e1e;
+      --border: #2a2a2a;
+      --accent: #f5c842;
+      --accent2: #e07b39;
+      --accent3: #4fc3a1;
+      --text: #e8e8e8;
+      --text-muted: #888;
+      --danger: #e05555;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* ── Header ── */
+    .hero {
+      background: linear-gradient(135deg, #111 0%, #1a1400 50%, #0d1a10 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 60px 40px 50px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(245,200,66,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-emoji {
+      font-size: 72px;
+      line-height: 1;
+      display: block;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 4px 24px rgba(245,200,66,0.4));
+    }
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: var(--accent);
+      text-shadow: 0 2px 20px rgba(245,200,66,0.3);
+    }
+    .hero .tagline {
+      margin-top: 10px;
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .genre-pill {
+      display: inline-block;
+      margin-top: 18px;
+      padding: 5px 16px;
+      border-radius: 999px;
+      background: rgba(245,200,66,0.1);
+      border: 1px solid rgba(245,200,66,0.3);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      max-width: 1200px;
+      margin: 0 auto;
+      min-height: calc(100vh - 200px);
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      border-right: 1px solid var(--border);
+      padding: 32px 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-label {
+      padding: 0 20px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+    .sidebar a {
+      display: block;
+      padding: 8px 20px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .sidebar a:hover {
+      color: var(--text);
+      border-left-color: var(--accent);
+      background: rgba(245,200,66,0.04);
+    }
+    .sidebar a.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: rgba(245,200,66,0.07);
+    }
+
+    /* ── Content ── */
+    .content {
+      padding: 48px 48px 80px;
+      max-width: 860px;
+    }
+
+    section {
+      margin-bottom: 64px;
+      scroll-margin-top: 24px;
+    }
+
+    h2 {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h2 .icon { font-size: 22px; }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent2);
+      margin: 28px 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 13px;
+    }
+
+    p { margin-bottom: 12px; color: var(--text); }
+
+    /* ── Cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .card-emoji { font-size: 28px; margin-bottom: 8px; display: block; }
+    .card-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .card-desc { font-size: 13px; color: var(--text-muted); }
+
+    /* ── Stat Grid ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 4px; }
+    .stat-value { font-size: 22px; font-weight: 800; color: var(--accent); }
+    .stat-unit { font-size: 12px; color: var(--text-muted); }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 14px;
+    }
+    th {
+      text-align: left;
+      padding: 9px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    td {
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+    /* ── Code ── */
+    code {
+      font-family: 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 13px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+      color: var(--accent3);
+    }
+    pre {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      overflow-x: auto;
+      margin-top: 12px;
+      font-family: 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 13px;
+      color: var(--accent3);
+      line-height: 1.6;
+    }
+
+    /* ── Loop Steps ── */
+    .loop-steps {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .loop-step {
+      display: flex;
+      gap: 16px;
+      position: relative;
+    }
+    .loop-step:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 18px;
+      top: 38px;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--accent);
+      z-index: 1;
+    }
+    .step-body {
+      padding: 6px 0 24px;
+    }
+    .step-title { font-weight: 700; margin-bottom: 4px; }
+    .step-desc { font-size: 14px; color: var(--text-muted); }
+
+    /* ── Callout ── */
+    .callout {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .callout.danger { border-color: var(--danger); }
+    .callout.info { border-color: var(--accent3); }
+    .callout-title { font-weight: 700; margin-bottom: 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+    .callout.danger .callout-title { color: var(--danger); }
+    .callout.info .callout-title { color: var(--accent3); }
+
+    /* ── Inline quote ── */
+    blockquote {
+      border-left: 3px solid var(--border);
+      padding: 12px 18px;
+      margin: 14px 0;
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 14px;
+    }
+
+    /* ── Tags ── */
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .tag {
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .tag.highlight { border-color: var(--accent); color: var(--accent); background: rgba(245,200,66,0.07); }
+
+    /* ── Enemy card variant ── */
+    .enemy-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 12px;
+    }
+    .enemy-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .enemy-emoji { font-size: 36px; }
+    .enemy-name { font-size: 18px; font-weight: 700; }
+    .enemy-type { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .enemy-body { font-size: 14px; color: var(--text-muted); }
+    .enemy-body ul { padding-left: 18px; }
+    .enemy-body li { margin-bottom: 4px; }
+
+    /* ── Screen cards ── */
+    .screen-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .screen-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .screen-name { font-weight: 700; margin-bottom: 6px; }
+    .screen-desc { font-size: 13px; color: var(--text-muted); }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .content { padding: 32px 20px 60px; }
+      .hero { padding: 40px 20px; }
+      .hero h1 { font-size: 36px; }
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="hero-emoji">🥷</span>
+  <h1>Ninjack</h1>
+  <p class="tagline">A turn-based roguelike puzzle-dungeon crawler set in a treacherous forest and hidden cave system. Can you escape Slitherwood?</p>
+  <span class="genre-pill">Turn-Based Roguelike · Grid Puzzle · Dungeon Crawler</span>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-label">Spec</div>
+    <a href="#overview">Overview</a>
+    <a href="#world">World &amp; Setting</a>
+    <a href="#loop">Gameplay Loop</a>
+    <a href="#player">Player Mechanics</a>
+    <a href="#enemies">Enemies</a>
+    <a href="#collectibles">Collectibles &amp; Loot</a>
+    <a href="#progression">Progression</a>
+    <a href="#finale">Finale &amp; Win Conditions</a>
+    <a href="#cave">Greedy Grotto (Cave)</a>
+    <a href="#screens">Screens &amp; UI</a>
+    <a href="#plot">Plot &amp; Narrative</a>
+    <a href="#constants">Constants &amp; Config</a>
+    <a href="#modes">Special Modes</a>
+    <div class="sidebar-label" style="margin-top:16px;">Classification</div>
+    <a href="#fantasy">Core Fantasy</a>
+    <a href="#tone">Tone &amp; Mood</a>
+    <a href="#session">Session Length</a>
+    <a href="#difficulty">Difficulty Curve</a>
+    <a href="#information">Information Model</a>
+    <a href="#riskreward">Risk / Reward</a>
+    <a href="#replayability">Replayability</a>
+    <a href="#permadeath">Permadeath Type</a>
+    <a href="#accessibility">Accessibility</a>
+    <a href="#platform">Platform &amp; Distribution</a>
+    <a href="#aesthetic">Art Style &amp; Aesthetic</a>
+    <a href="#comps">Comparable Titles</a>
+  </nav>
+
+  <main class="content">
+
+    <!-- ── OVERVIEW ── -->
+    <section id="overview">
+      <h2><span class="icon">🗺️</span> Overview</h2>
+      <p>
+        <strong>Ninjack</strong> is a browser-based, turn-based roguelike dungeon crawler played on a <strong>9×9 grid</strong>.
+        The player controls a ninja and must fight through <strong>10 levels</strong> of a snake-infested forest called
+        <em>Slitherwood</em>, collecting keys, swords, and gold along the way. A parallel cave system called
+        <em>Greedy Grotto</em> offers permanent gold-gated progression unlocks.
+      </p>
+      <p>
+        There are no dice rolls mid-combat and no randomness during play — all loot is pre-rolled at level start using a
+        Fisher-Yates shuffle. Strategy comes from reading enemy patterns, conserving swords, and timing moves
+        against the snake AI cycle.
+      </p>
+
+      <div class="stat-grid">
+        <div class="stat"><div class="stat-label">Grid Size</div><div class="stat-value">9×9</div><div class="stat-unit">81 tiles</div></div>
+        <div class="stat"><div class="stat-label">Total Levels</div><div class="stat-value">10</div><div class="stat-unit">forest</div></div>
+        <div class="stat"><div class="stat-label">Starting Health</div><div class="stat-value">3</div><div class="stat-unit">hearts</div></div>
+        <div class="stat"><div class="stat-label">Max Health</div><div class="stat-value">5</div><div class="stat-unit">hearts</div></div>
+        <div class="stat"><div class="stat-label">Trees / Level</div><div class="stat-value">64</div><div class="stat-unit">destructible</div></div>
+        <div class="stat"><div class="stat-label">Rocks / Level</div><div class="stat-value">15</div><div class="stat-unit">destructible</div></div>
+      </div>
+    </section>
+
+    <!-- ── WORLD ── -->
+    <section id="world">
+      <h2><span class="icon">🌲</span> World &amp; Setting</h2>
+
+      <h3>Slitherwood — Forest (Levels 1–10)</h3>
+      <p>
+        A dense, snake-filled forest. Each level is a freshly generated 9×9 grid packed with 64 trees and 15 rocks.
+        The player must break through vegetation to find the key and door that advances to the next level.
+        Trees occasionally hide snakes; rocks always hide either a heart or a snake.
+      </p>
+
+      <h3>Greedy Grotto — Cave (Parallel System)</h3>
+      <p>
+        A secret cave accessible between forest levels via a paid gate. Each cave room is a fixed layout guarded by a
+        <strong>Money Monster</strong> (🤑) who demands gold tribute. Pay enough and the gate unlocks permanently — even
+        across future runs. The cave offers treasure but is not required to beat the game.
+      </p>
+
+      <h3>Key Locations</h3>
+      <table>
+        <tr><th>Zone</th><th>Emoji</th><th>Description</th></tr>
+        <tr><td>Slitherwood</td><td>🌲</td><td>Forest levels, primary campaign, snakes and rocks</td></tr>
+        <tr><td>Greedy Grotto</td><td>🕳️</td><td>Cave system, money monster, permanent gate unlocks</td></tr>
+        <tr><td>Cave Gate</td><td>🚪</td><td>Entry to Greedy Grotto, blocks access until paid</td></tr>
+      </table>
+    </section>
+
+    <!-- ── LOOP ── -->
+    <section id="loop">
+      <h2><span class="icon">🔄</span> Gameplay Loop</h2>
+      <p>One arrow key press = one turn. All enemies move after the player resolves their action.</p>
+
+      <div class="loop-steps">
+        <div class="loop-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Player Input</div>
+            <div class="step-desc">Arrow key or on-screen button (up/down/left/right). No diagonals. Edge of board clamps — can't walk off grid.</div>
+          </div>
+        </div>
+        <div class="loop-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Pre-Move Checks</div>
+            <div class="step-desc">20% chance: rocks adjacent to the player containing snakes auto-reveal. Key auto-generated if all trees are gone and no key exists (soft-lock prevention).</div>
+          </div>
+        </div>
+        <div class="loop-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Tile Interaction</div>
+            <div class="step-desc">Bumping into a tile resolves its interaction — wall (block), tree/rock (break), snake (combat), door/hole (advance or die), items (collect), cave gate/money monster (payment).</div>
+          </div>
+        </div>
+        <div class="loop-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Enemy AI</div>
+            <div class="step-desc">Every snake advances its pattern: moves 1–3 are random, move 4 is BFS pathfinding chase. Snakes die if they walk into a hole. Rabbit (if spawned) uses weighted AI to flee player and seek the hole.</div>
+          </div>
+        </div>
+        <div class="loop-step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-title">Rabbit Spawn Check</div>
+            <div class="step-desc">Once per run, when trees remaining drop below 50% of starting count, the rabbit (🐇) spawns near the hole — worth 40 gold if caught before it escapes.</div>
+          </div>
+        </div>
+        <div class="loop-step">
+          <div class="step-num">6</div>
+          <div class="step-body">
+            <div class="step-title">State Save</div>
+            <div class="step-desc">Full game state persisted to localStorage with SHA-256 hash after every move. Run is resumable on refresh.</div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Interaction Priority Order</h3>
+      <table>
+        <tr><th>#</th><th>Tile</th><th>Result</th></tr>
+        <tr><td>1</td><td>Wall / Fire</td><td>Movement blocked; enemies still take their turn</td></tr>
+        <tr><td>2</td><td>Hole 🕳️</td><td>Instant death (or win on Level 10 with chute)</td></tr>
+        <tr><td>3</td><td>Cave Gate 🚪</td><td>Opens if paid; otherwise shows contribution prompt</td></tr>
+        <tr><td>4</td><td>Money Monster 🤑</td><td>Deducts 10% of current gold; tracks toward gate price</td></tr>
+        <tr><td>5</td><td>Door 🚪</td><td>Advances level if key was used to unlock</td></tr>
+        <tr><td>6</td><td>Tree 🌲 / Rock 🪨</td><td>Breaks; reveals loot from pre-rolled table</td></tr>
+        <tr><td>7</td><td>Open tile / items</td><td>Collect item or handle snake/rabbit combat</td></tr>
+      </table>
+    </section>
+
+    <!-- ── PLAYER ── -->
+    <section id="player">
+      <h2><span class="icon">🥷</span> Player Mechanics</h2>
+
+      <h3>Stats</h3>
+      <div class="stat-grid">
+        <div class="stat"><div class="stat-label">Health</div><div class="stat-value">3</div><div class="stat-unit">start, max 5</div></div>
+        <div class="stat"><div class="stat-label">Swords</div><div class="stat-value">0–99</div><div class="stat-unit">no limit shown as 99</div></div>
+        <div class="stat"><div class="stat-label">Gold</div><div class="stat-value">∞</div><div class="stat-unit">persists across levels</div></div>
+        <div class="stat"><div class="stat-label">Keys</div><div class="stat-value">0–1</div><div class="stat-unit">per level</div></div>
+        <div class="stat"><div class="stat-label">Chutes</div><div class="stat-value">0–1</div><div class="stat-unit">level 10 only</div></div>
+      </div>
+
+      <h3>Combat</h3>
+      <table>
+        <tr><th>Situation</th><th>Outcome</th></tr>
+        <tr><td>Player has swords + touches snake</td><td>1 sword consumed, snake dies</td></tr>
+        <tr><td>No swords, health &gt; 1 + touches snake</td><td>1 health lost, snake dies</td></tr>
+        <tr><td>No swords, health = 1 + touches snake</td><td>Player dies 💀</td></tr>
+        <tr><td>Touches hole (no chute or not Level 10)</td><td>Full damage, instant death</td></tr>
+        <tr><td>Touches hole on Level 10 with chute</td><td><strong>Win condition</strong></td></tr>
+      </table>
+
+      <h3>Skin Customization</h3>
+      <p>Six ninja emoji variants selectable on the main menu, stored in localStorage. Options: 🥷 🥷🏻 🥷🏼 🥷🏽 🥷🏾 🥷🏿</p>
+
+      <h3>Visual Effects</h3>
+      <p>Speed trail: three ghost ninjas follow the player with staggered opacity and timing (0.50s, 0.37s, 0.24s delays). On movement blocked, a wobble animation plays on adjacent rock tiles.</p>
+    </section>
+
+    <!-- ── ENEMIES ── -->
+    <section id="enemies">
+      <h2><span class="icon">🐍</span> Enemies</h2>
+
+      <div class="enemy-card">
+        <div class="enemy-header">
+          <div class="enemy-emoji">🐍</div>
+          <div>
+            <div class="enemy-name">Snake</div>
+            <div class="enemy-type">Standard Enemy · All Levels</div>
+          </div>
+        </div>
+        <div class="enemy-body">
+          <ul>
+            <li>AI pattern: <code>[random, random, random, chase]</code> repeating cycle</li>
+            <li>Chase phase uses BFS pathfinding toward player</li>
+            <li>On chase turn, a directional arrow indicator appears on the snake tile</li>
+            <li>Costs 1 sword to kill, or 1 health if no swords (and health &gt; 1)</li>
+            <li>Dies if it walks into a hole</li>
+            <li>Cannot pass through trees, rocks, doors, other snakes, walls, or the rabbit</li>
+            <li>Breaking the final rock triggers the <strong>Final Boss</strong>: all remaining rocks instantly convert to snakes</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="enemy-card">
+        <div class="enemy-header">
+          <div class="enemy-emoji">🤑</div>
+          <div>
+            <div class="enemy-name">Money Monster</div>
+            <div class="enemy-type">Cave Boss · Greedy Grotto</div>
+          </div>
+        </div>
+        <div class="enemy-body">
+          <ul>
+            <li>Spawns at position (4, 1) in every cave room, blocking the heart and gate</li>
+            <li>Each bump deducts <code>max(1, ceil(gold × 0.1))</code> gold and counts toward gate payment</li>
+            <li>At 75% payment: becomes 🤢 Sick Monster</li>
+            <li>At 100% payment: disappears; heart appears at (4, 4)</li>
+            <li>If bumped 25 times without paying (no gold): becomes 👹 Mad Monster</li>
+            <li>After 5 mad bumps: deals full damage — <strong>instant death</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="enemy-card">
+        <div class="enemy-header">
+          <div class="enemy-emoji">🐇</div>
+          <div>
+            <div class="enemy-name">Rabbit</div>
+            <div class="enemy-type">Friendly NPC · One-Time Spawn</div>
+          </div>
+        </div>
+        <div class="enemy-body">
+          <ul>
+            <li>Spawns <strong>once per run</strong> when trees remaining drop below 50% of starting count</li>
+            <li>Spawns near the hole (≥4 Manhattan distance, away from player)</li>
+            <li>AI scoring: hole attraction weight 10, player flee weight 7, danger penalty −50</li>
+            <li>Catching it rewards <strong>40 gold</strong> (👑 crown notification)</li>
+            <li>If it reaches the hole it escapes silently (no death notification)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── COLLECTIBLES ── -->
+    <section id="collectibles">
+      <h2><span class="icon">💰</span> Collectibles &amp; Loot</h2>
+
+      <h3>Forest Loot (from Trees)</h3>
+      <div class="cards">
+        <div class="card"><span class="card-emoji">🪙</span><div class="card-title">Coin</div><div class="card-desc">+1 gold · 5 per level</div></div>
+        <div class="card"><span class="card-emoji">💰</span><div class="card-title">Gold Bag</div><div class="card-desc">+5 gold · 2 per level</div></div>
+        <div class="card"><span class="card-emoji">💎</span><div class="card-title">Gem</div><div class="card-desc">+10 gold · 1 per level</div></div>
+        <div class="card"><span class="card-emoji">🗡️</span><div class="card-title">Sword</div><div class="card-desc">+1 sword · 5 per level</div></div>
+        <div class="card"><span class="card-emoji">🔑</span><div class="card-title">Key</div><div class="card-desc">Required to unlock door</div></div>
+        <div class="card"><span class="card-emoji">🚪</span><div class="card-title">Door</div><div class="card-desc">Exit — locked until key used</div></div>
+        <div class="card"><span class="card-emoji">🐍</span><div class="card-title">Snake</div><div class="card-desc">Enemy, hidden in trees</div></div>
+      </div>
+
+      <h3>Rock Loot (from Rocks)</h3>
+      <div class="cards">
+        <div class="card"><span class="card-emoji">❤️</span><div class="card-title">Heart</div><div class="card-desc">+1 health (max 5) · 2 per level</div></div>
+        <div class="card"><span class="card-emoji">🐍</span><div class="card-title">Snake</div><div class="card-desc">Enemy hidden in rock</div></div>
+      </div>
+
+      <h3>Special Items</h3>
+      <div class="cards">
+        <div class="card"><span class="card-emoji">🪂</span><div class="card-title">Chute</div><div class="card-desc">Level 10 only — use hole as escape instead of death</div></div>
+        <div class="card"><span class="card-emoji">🐇</span><div class="card-title">Rabbit</div><div class="card-desc">+40 gold if caught (one-time per run)</div></div>
+      </div>
+
+      <h3>Gold Values Summary</h3>
+      <table>
+        <tr><th>Source</th><th>Gold</th><th>Notes</th></tr>
+        <tr><td>🪙 Coin</td><td>1</td><td>Most common</td></tr>
+        <tr><td>💰 Gold Bag</td><td>5</td><td>Moderate</td></tr>
+        <tr><td>💎 Gem</td><td>10</td><td>Rare; also in cave gem rock</td></tr>
+        <tr><td>🐇 Rabbit</td><td>40</td><td>One-time; must catch before it escapes</td></tr>
+        <tr><td>Max per level</td><td>141</td><td>All loot collected (used in gate price formula)</td></tr>
+      </table>
+    </section>
+
+    <!-- ── PROGRESSION ── -->
+    <section id="progression">
+      <h2><span class="icon">📈</span> Progression</h2>
+
+      <h3>Level Advancement</h3>
+      <p>
+        Find the <strong>key</strong> hidden in the trees. Bring it to the <strong>door</strong> (also in trees) to unlock it.
+        Walk through to advance. On Level 10, a chute is required — the door is replaced with a hole.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Soft-Lock Prevention</div>
+        If all trees are broken and no key was ever revealed, the game automatically gives the player one key.
+      </div>
+
+      <h3>Carry-Over Between Levels</h3>
+      <table>
+        <tr><th>Item</th><th>Persists?</th><th>Notes</th></tr>
+        <tr><td>❤️ Health</td><td>Yes</td><td>Max health increases permanently with each heart collected</td></tr>
+        <tr><td>🗡️ Swords</td><td>Yes</td><td>Accumulate across entire run (0–99)</td></tr>
+        <tr><td>💰 Gold</td><td>Yes</td><td>Never lost except to cave payments</td></tr>
+        <tr><td>🔑 Key</td><td>No</td><td>Consumed on door unlock</td></tr>
+        <tr><td>🪂 Chute</td><td>No</td><td>Only exists on Level 10</td></tr>
+      </table>
+
+      <h3>Greedy Grotto Gate Prices</h3>
+      <p>Gates are paid permanently — once unlocked they open for all future runs. Formula: <code>ceil(gate × 141 × multiplier / 10) × 10</code></p>
+      <table>
+        <tr><th>Gate</th><th>Price</th><th>Multiplier</th></tr>
+        <tr><td>1</td><td>141 gold</td><td>1×</td></tr>
+        <tr><td>2</td><td>282 gold</td><td>2×</td></tr>
+        <tr><td>3</td><td>564 gold</td><td>4×</td></tr>
+        <tr><td>4</td><td>705 gold</td><td>5×</td></tr>
+        <tr><td>5+</td><td>~141 × gate × 5</td><td>5×</td></tr>
+      </table>
+
+      <h3>Snake Count Scaling (Normal)</h3>
+      <p>Snakes in trees grow each level. Rocks always contain either a heart or a snake, regardless of level. The final boss (breaking the last rock) converts all remaining rocks to snakes instantly.</p>
+    </section>
+
+    <!-- ── FINALE ── -->
+    <section id="finale">
+      <h2><span class="icon">🏆</span> Finale &amp; Win/Loss Conditions</h2>
+
+      <h3>Win Condition</h3>
+      <p>
+        Reach <strong>Level 10</strong>. Collect the <strong>chute</strong> (🪂) hidden in the trees.
+        Find the <strong>hole</strong> (🕳️) and walk into it. Instead of dying, the chute lets the ninja escape — triggering the win screen.
+      </p>
+
+      <div class="callout info">
+        <div class="callout-title">Win Screen Text</div>
+        "Take a screenshot! 📸 You escaped Slitherwood! Final score: 💰[Gold] Gold · ⏺️[Moves] Moves · 🕥[Seconds] Seconds. Ready to beat your score?"
+      </div>
+
+      <h3>Final Boss</h3>
+      <p>
+        Breaking the <strong>15th and final rock</strong> on any level triggers the final boss event: every remaining rock on the board instantly converts into a snake (all spawn with <code>justSpawned = true</code>, so they don't move on that turn). The player must defeat or survive them all before advancing.
+      </p>
+
+      <h3>Death Conditions</h3>
+      <div class="callout danger">
+        <div class="callout-title">All Death Triggers</div>
+        <ul style="padding-left:18px; margin-top:6px; font-size:14px;">
+          <li>Contact with snake, no swords, health = 1</li>
+          <li>Contact with hole (without chute on Level 10)</li>
+          <li>5th bump on a Mad Money Monster (👹)</li>
+        </ul>
+      </div>
+      <p>On death: 1-second delay → death modal → "You died 💀 on Level X!" → options to start a new run or return to main menu. Save is cleared.</p>
+
+    </section>
+
+    <!-- ── CAVE ── -->
+    <section id="cave">
+      <h2><span class="icon">🕳️</span> Greedy Grotto (Cave System)</h2>
+      <p>
+        The cave is a parallel progression layer — not required to beat the game, but offering powerful loot (gems, hearts) and permanent gold-gated unlocks.
+      </p>
+
+      <h3>Cave Room Layout (Fixed 9×9)</h3>
+      <table>
+        <tr><th>Position</th><th>Tile</th><th>Description</th></tr>
+        <tr><td>(4, 0)</td><td>🚪 Cave Gate</td><td>Locked until fully paid; blocks top exit</td></tr>
+        <tr><td>(3,1) (5,1)</td><td>🔥 Fire</td><td>Impassable walls (visual flavor)</td></tr>
+        <tr><td>(4, 1)</td><td>🤑 Money Monster</td><td>Demand tribute, guards heart</td></tr>
+        <tr><td>(4, 4)</td><td>🕳️→❤️</td><td>Hole before payment; Heart after paid</td></tr>
+        <tr><td>Edges</td><td>🪨 Wall</td><td>All perimeter except (4, 8) spawn point</td></tr>
+        <tr><td>Random</td><td>💎 Gem Rock</td><td>Hidden gem rock on a wall candidate tile</td></tr>
+      </table>
+
+      <h3>Money Monster Payment Logic</h3>
+      <p>Each bump deducts <strong>10% of current gold</strong> (minimum 1, rounded up) and adds to the gate's contribution total.</p>
+      <table>
+        <tr><th>Threshold</th><th>State</th><th>Effect</th></tr>
+        <tr><td>75% paid</td><td>🤢 Sick</td><td>Visual change, still demands gold</td></tr>
+        <tr><td>100% paid</td><td>✅ Gone</td><td>Monster removed; heart appears at (4,4)</td></tr>
+        <tr><td>25 no-pay bumps</td><td>👹 Mad</td><td>No longer accepts gold</td></tr>
+        <tr><td>5 mad bumps</td><td>💀 Kill</td><td>Instant full damage, player dies</td></tr>
+      </table>
+
+      <h3>Gate Persistence</h3>
+      <p>
+        Once a gate is paid off, it stays unlocked <strong>forever</strong> — across all runs, stored in
+        <code>ninjack_gates_unlocked</code> in localStorage. Contribution totals are also saved per gate in
+        <code>ninjack_contributions</code>.
+      </p>
+    </section>
+
+    <!-- ── SCREENS ── -->
+    <section id="screens">
+      <h2><span class="icon">🖥️</span> Screens &amp; UI</h2>
+
+      <div class="screen-row">
+        <div class="screen-card">
+          <div class="screen-name">🏠 Main Menu</div>
+          <div class="screen-desc">Skin picker, control layout selector, New Game / Continue buttons, credits.</div>
+        </div>
+        <div class="screen-card">
+          <div class="screen-name">🎮 Game HUD</div>
+          <div class="screen-desc">Health bar (❤️/🤍), inventory (🗡️ swords, 🔑/🪂, 💰 gold), level name, move counter.</div>
+        </div>
+        <div class="screen-card">
+          <div class="screen-name">🕳️ Cave View</div>
+          <div class="screen-desc">Same grid, dark music, gate payment progress, money monster states.</div>
+        </div>
+        <div class="screen-card">
+          <div class="screen-name">💀 Death Modal</div>
+          <div class="screen-desc">"You died 💀 on Level X!" — buttons: Main Menu, New Run {N}.</div>
+        </div>
+        <div class="screen-card">
+          <div class="screen-name">🏆 Win Modal</div>
+          <div class="screen-desc">Final gold / moves / seconds score, screenshot prompt, return to menu.</div>
+        </div>
+        <div class="screen-card">
+          <div class="screen-name">👋 Welcome Modal</div>
+          <div class="screen-desc">Shown once per browser session. Brief intro and encouragement.</div>
+        </div>
+        <div class="screen-card">
+          <div class="screen-name">⬛ Fade Transition</div>
+          <div class="screen-desc">0.4s black fade with music crossfade on cave entry/exit.</div>
+        </div>
+      </div>
+
+      <h3>Control Layout Options</h3>
+      <div class="tags">
+        <span class="tag highlight">D-Pad (Default)</span>
+        <span class="tag">Arrow Keys (Inverted)</span>
+        <span class="tag">Split Row</span>
+        <span class="tag">Thumbs</span>
+        <span class="tag">Thumbs Lefty</span>
+        <span class="tag">Virtual Stick</span>
+      </div>
+
+      <h3>HUD Inventory Display</h3>
+      <pre>❤️ ❤️ 🤍   🗡️3  🔑1  💰47</pre>
+      <p style="font-size:13px;color:var(--text-muted);margin-top:6px;">Health / empty hearts · Swords · Key or Chute · Gold total. On Level 10, key slot shows chute (🪂).</p>
+    </section>
+
+    <!-- ── PLOT ── -->
+    <section id="plot">
+      <h2><span class="icon">📜</span> Plot &amp; Narrative</h2>
+      <p>Ninjack is largely mechanics-driven with minimal explicit narrative. The world is communicated through emoji and level names.</p>
+
+      <h3>Welcome Message (Shown Once Per Session)</h3>
+      <blockquote>
+        "Welcome to Ninjack! A rogue-like puzzle-ish dungeon crawler game! Let me know if you love it or have any issues! And good luck!<br><br>
+        Can you escape Level 🚪10 of Slitherwood?"
+      </blockquote>
+
+      <h3>Implied Narrative</h3>
+      <p>
+        A ninja is trapped deep inside <strong>Slitherwood</strong> — a forest overrun by snakes — and must fight through
+        10 increasingly dangerous levels to escape. Along the way, a hidden cave system called the <strong>Greedy Grotto</strong>
+        can be explored, where a Money Monster guards treasure behind gold-locked gates.
+        On Level 10, instead of a door, only a dark hole and a parachute offer the path to freedom.
+      </p>
+
+      <h3>Music &amp; Atmosphere</h3>
+      <table>
+        <tr><th>Zone</th><th>Track</th><th>Artist</th></tr>
+        <tr><td>Slitherwood</td><td>"Woods of Linzor"</td><td>HeatleyBros</td></tr>
+        <tr><td>Greedy Grotto</td><td>"Dark Alley"</td><td>HeatleyBros</td></tr>
+      </table>
+
+      <h3>Notification Symbols (In-Game Storytelling)</h3>
+      <table>
+        <tr><th>Symbol</th><th>Event</th></tr>
+        <tr><td>💔</td><td>Damage taken</td></tr>
+        <tr><td>💀</td><td>Enemy killed or player death</td></tr>
+        <tr><td>👑</td><td>Rabbit caught</td></tr>
+        <tr><td>🔐 / 🔒</td><td>Door unlocked / locked</td></tr>
+      </table>
+    </section>
+
+    <!-- ── CONSTANTS ── -->
+    <section id="constants">
+      <h2><span class="icon">⚙️</span> Constants &amp; Configuration</h2>
+
+      <h3>World</h3>
+      <table>
+        <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
+        <tr><td><code>worldSize</code></td><td>9</td><td>Grid dimension (9×9 = 81 tiles)</td></tr>
+        <tr><td><code>rockCount</code></td><td>15</td><td>Rocks per level</td></tr>
+        <tr><td><code>treeCount</code></td><td>64</td><td>Trees per level</td></tr>
+        <tr><td><code>startingLevel</code></td><td>0</td><td>Internal index (displayed as Level 1)</td></tr>
+      </table>
+
+      <h3>Loot per Level</h3>
+      <table>
+        <tr><th>Item</th><th>Count</th><th>Gold Value</th></tr>
+        <tr><td>🗡️ Swords</td><td>5</td><td>—</td></tr>
+        <tr><td>🪙 Coins</td><td>5</td><td>1 each</td></tr>
+        <tr><td>💰 Gold Bags</td><td>2</td><td>5 each</td></tr>
+        <tr><td>💎 Gems</td><td>1</td><td>10</td></tr>
+        <tr><td>🐇 Rabbit (per run)</td><td>1</td><td>40</td></tr>
+        <tr><td>Max total gold/level</td><td>—</td><td>141</td></tr>
+      </table>
+
+      <h3>Timings &amp; Chances</h3>
+      <table>
+        <tr><th>Parameter</th><th>Value</th></tr>
+        <tr><td>Rock auto-reveal chance</td><td>20% per adjacent rock per move</td></tr>
+        <tr><td>Rabbit spawn trigger</td><td>Trees &lt; 50% of starting count</td></tr>
+        <tr><td>Cave fade duration</td><td>0.4s</td></tr>
+        <tr><td>Death delay</td><td>1.0s</td></tr>
+        <tr><td>Speed trail durations</td><td>0.50s / 0.37s / 0.24s</td></tr>
+        <tr><td>Money Monster mad threshold</td><td>25 no-pay bumps</td></tr>
+        <tr><td>Money Monster kill threshold</td><td>5 mad bumps</td></tr>
+      </table>
+
+      <h3>Snake AI Pattern</h3>
+      <pre>['random', 'random', 'random', 'chase']</pre>
+      <p style="font-size:13px;color:var(--text-muted);margin-top:6px;">Cycles continuously. Chase phase uses BFS to find shortest path to player in 4-cardinal directions.</p>
+
+      <h3>Rabbit AI Weights</h3>
+      <table>
+        <tr><th>Factor</th><th>Weight</th></tr>
+        <tr><td>Distance to hole (attraction)</td><td>+10</td></tr>
+        <tr><td>Distance from player (flee)</td><td>+7</td></tr>
+        <tr><td>Adjacent to player (penalty)</td><td>−50</td></tr>
+      </table>
+    </section>
+
+    <!-- ── MODES ── -->
+    <section id="modes">
+      <h2><span class="icon">🔧</span> Special Modes</h2>
+
+      <h3>Dev Mode (<code>?dev</code>)</h3>
+      <ul style="padding-left:18px; font-size:14px; color:var(--text-muted); margin-top:8px;">
+        <li>Level skip dropdown on main menu (jump to levels 1–10)</li>
+        <li>"⚡ Max" button: sets health and swords both to 99</li>
+        <li>Additional debug UI elements visible</li>
+        <li><code>window.__debug</code> console toolkit (board/inventory/entity control, no UI)</li>
+      </ul>
+
+      <h3>Soundboard Mode (<code>?soundboard=true</code>)</h3>
+      <ul style="padding-left:18px; font-size:14px; color:var(--text-muted); margin-top:8px;">
+        <li>Full audio testing interface for all 35+ sound effects</li>
+        <li>Music track switcher</li>
+      </ul>
+
+      <h3>Reset (<code>?reset</code>)</h3>
+      <ul style="padding-left:18px; font-size:14px; color:var(--text-muted); margin-top:8px;">
+        <li>Clears all localStorage data and reloads fresh</li>
+      </ul>
+
+      <h3>Save System</h3>
+      <p style="font-size:14px; color:var(--text-muted); margin-top:8px;">
+        Full game state saved to localStorage after every move (version 2 format). SHA-256 hash stored separately as
+        <code>ninjack_save_hash</code> to detect tampering. Cave gate progress saved to <code>ninjack_gates_unlocked</code>
+        and <code>ninjack_contributions</code>, persisting indefinitely.
+      </p>
+    </section>
+
+
+    <!-- ── CORE FANTASY ── -->
+    <section id="fantasy">
+      <h2><span class="icon">✨</span> Core Fantasy</h2>
+      <p>
+        The player fantasy is <strong>the clever, outmatched ninja</strong> — outnumbered by snakes but never outthought.
+        Every sword is precious, every move deliberate. The satisfaction loop is about reading a predictable enemy pattern,
+        planning two steps ahead, and threading a gap that looked closed.
+      </p>
+      <p>
+        The game is not about reflexes or speed. It rewards <em>restraint</em>: knowing when to break a rock, when to spend
+        a sword, and when to let a snake pass. The rabbit is a brief test of greed — drop everything and chase 40 gold,
+        or stay safe and let it escape.
+      </p>
+      <div class="callout info">
+        <div class="callout-title">The Central Tension</div>
+        Trees contain both swords (needed to fight) and snakes (that need fighting). Opening the board makes you richer and more dangerous simultaneously.
+      </div>
+    </section>
+
+    <!-- ── TONE ── -->
+    <section id="tone">
+      <h2><span class="icon">🎨</span> Tone &amp; Mood</h2>
+      <p>
+        Ninjack is <strong>lighthearted and playful</strong>, not grim. Death is a 💀 emoji, not a screen of blood.
+        Enemies are cartoon animals (🐍🐇) and a money-hungry monster (🤑). The world is communicated almost entirely
+        through emoji — there is no written lore, no cutscenes, no dialogue.
+      </p>
+      <p>
+        The forest music ("Woods of Linzor") is adventure-y and upbeat; the cave music ("Dark Alley") is tenser but not oppressive.
+        Together they keep the mood in the <strong>cozy-but-focused</strong> pocket — casual enough to pick up, engaging enough to think.
+      </p>
+      <div class="stat-grid" style="margin-top:16px;">
+        <div class="stat"><div class="stat-label">Tone</div><div class="stat-value" style="font-size:16px;">Playful</div></div>
+        <div class="stat"><div class="stat-label">Stakes</div><div class="stat-value" style="font-size:16px;">Medium</div></div>
+        <div class="stat"><div class="stat-label">Violence</div><div class="stat-value" style="font-size:16px;">Emoji</div></div>
+        <div class="stat"><div class="stat-label">Narrative Density</div><div class="stat-value" style="font-size:16px;">Minimal</div></div>
+      </div>
+    </section>
+
+    <!-- ── SESSION LENGTH ── -->
+    <section id="session">
+      <h2><span class="icon">⏱️</span> Session Length &amp; Pacing</h2>
+      <p>
+        A full run (Level 1–10) is designed for a <strong>single sitting</strong>. There are no checkpoints — death returns
+        the player to the start. A typical run where the player is learning takes 15–30 minutes; an experienced player moving
+        quickly could complete it in under 10.
+      </p>
+
+      <h3>Pacing Structure</h3>
+      <table>
+        <tr><th>Phase</th><th>Levels</th><th>Feel</th></tr>
+        <tr><td>Early game</td><td>1–3</td><td>Sparse snakes, abundant swords — exploration and learning</td></tr>
+        <tr><td>Mid game</td><td>4–7</td><td>Snake density rises, sword economy tightens, keys harder to find</td></tr>
+        <tr><td>Late game</td><td>8–9</td><td>High snake counts, final boss threat looms on every rock</td></tr>
+        <tr><td>Finale</td><td>10</td><td>Must find chute — escape via hole instead of door; one mistake = death</td></tr>
+      </table>
+
+      <h3>Session Micro-Pacing (Within a Level)</h3>
+      <p>Each level follows a natural arc:</p>
+      <ol style="padding-left:20px; margin-top:8px; font-size:14px; color:var(--text-muted);">
+        <li style="margin-bottom:4px;"><strong>Opening:</strong> Harvest trees safely, scout snake positions</li>
+        <li style="margin-bottom:4px;"><strong>Middle:</strong> Manage revealed snakes, break rocks carefully</li>
+        <li style="margin-bottom:4px;"><strong>Key hunt:</strong> Break remaining trees if key hasn't appeared</li>
+        <li style="margin-bottom:4px;"><strong>Final boss:</strong> Last rock converts all remaining rocks to snakes instantly</li>
+        <li><strong>Exit:</strong> Navigate to unlocked door (or hole on Level 10)</li>
+      </ol>
+
+      <h3>Break-Point Design</h3>
+      <p>
+        The game saves after every move, so a session can be interrupted at any point. This makes it viable as a
+        <strong>mobile pick-up-and-put-down</strong> game despite having permadeath.
+      </p>
+    </section>
+
+    <!-- ── DIFFICULTY CURVE ── -->
+    <section id="difficulty">
+      <h2><span class="icon">📊</span> Difficulty Curve</h2>
+      <p>
+        Ninjack has no explicit difficulty settings. Challenge increases through <strong>structural scaling</strong>:
+        more enemies, tighter resources, and a harder finale — not number inflation (enemy health stays at 1 hit throughout).
+      </p>
+
+      <h3>Scaling Axes</h3>
+      <table>
+        <tr><th>Parameter</th><th>Early (Lv 1–3)</th><th>Late (Lv 8–10)</th></tr>
+        <tr><td>Snakes from trees</td><td>Low</td><td>High (max 9)</td></tr>
+        <tr><td>Rocks remaining late</td><td>Many potential hearts</td><td>More snakes on final rock</td></tr>
+        <tr><td>Sword surplus</td><td>Usually positive</td><td>Tightly managed</td></tr>
+        <tr><td>Win condition</td><td>Find key → door</td><td>Find chute → hole (riskier)</td></tr>
+      </table>
+
+      <h3>Difficulty Levers Available to the Player</h3>
+      <ul style="padding-left:20px; margin-top:10px; font-size:14px; color:var(--text-muted);">
+        <li style="margin-bottom:4px;">Accumulate swords aggressively (reduces combat risk)</li>
+        <li style="margin-bottom:4px;">Collect hearts early (higher health = more sword-free snake trades)</li>
+        <li style="margin-bottom:4px;">Watch snake AI pattern cycle to predict chase turn</li>
+        <li style="margin-bottom:4px;">Use directional arrow indicator to dodge chase-phase snakes</li>
+        <li>Avoid breaking final rock until board is clear</li>
+      </ul>
+
+    </section>
+
+    <!-- ── INFORMATION MODEL ── -->
+    <section id="information">
+      <h2><span class="icon">👁️</span> Information Model</h2>
+      <p>
+        Ninjack is a game of <strong>partial information</strong>. The grid is fully visible, but the contents of intact trees
+        and rocks are hidden. This creates meaningful decisions from incomplete data.
+      </p>
+
+      <h3>What the Player Can See</h3>
+      <table>
+        <tr><th>Element</th><th>Visibility</th></tr>
+        <tr><td>All snakes on open tiles</td><td>✅ Fully visible</td></tr>
+        <tr><td>Snake AI direction (chase turn)</td><td>✅ Arrow indicator shown</td></tr>
+        <tr><td>Snake AI phase (turn 1/2/3/4)</td><td>❌ Hidden</td></tr>
+        <tr><td>Contents of intact trees</td><td>❌ Hidden until broken</td></tr>
+        <tr><td>Contents of intact rocks</td><td>❌ Hidden (heart or snake)</td></tr>
+        <tr><td>Pre-rolled loot tables</td><td>❌ Hidden</td></tr>
+        <tr><td>Rabbit spawn trigger (50% trees)</td><td>⚠️ Inferable from tree count</td></tr>
+        <tr><td>Money Monster payment progress</td><td>✅ Shown in HUD</td></tr>
+        <tr><td>Gate price and contributions</td><td>✅ Shown in cave</td></tr>
+      </table>
+
+      <h3>Key Hidden-Information Decisions</h3>
+      <ul style="padding-left:20px; margin-top:10px; font-size:14px; color:var(--text-muted);">
+        <li style="margin-bottom:4px;"><strong>Break this rock?</strong> — 50/50 heart vs snake; risk vs reward</li>
+        <li style="margin-bottom:4px;"><strong>Break this tree?</strong> — could be a sword or the snake that kills you</li>
+        <li style="margin-bottom:4px;"><strong>Is this snake about to chase?</strong> — can't know exactly which phase without counting turns</li>
+        <li>The 20% auto-reveal on adjacent rocks adds uncontrollable information reveals</li>
+      </ul>
+    </section>
+
+    <!-- ── RISK / REWARD ── -->
+    <section id="riskreward">
+      <h2><span class="icon">⚖️</span> Risk / Reward Design</h2>
+      <p>
+        Nearly every action in Ninjack carries a trade-off. The game builds tension from resource decisions, not from
+        time pressure or twitch skill.
+      </p>
+
+      <h3>Key Risk/Reward Axes</h3>
+      <table>
+        <tr><th>Decision</th><th>Upside</th><th>Downside</th></tr>
+        <tr><td>Break a tree</td><td>Loot (sword, gold, key, door)</td><td>May spawn a snake</td></tr>
+        <tr><td>Break a rock</td><td>Heart (heal)</td><td>50% chance it's a snake</td></tr>
+        <tr><td>Break the final rock</td><td>Advance — final boss triggered</td><td>All remaining rocks become snakes</td></tr>
+        <tr><td>Chase the rabbit</td><td>+40 gold</td><td>Expose yourself to snakes; it may escape anyway</td></tr>
+        <tr><td>Spend swords on snakes</td><td>Clear board safely</td><td>Fewer swords for harder snakes ahead</td></tr>
+        <tr><td>Visit the cave</td><td>Gem, heart, permanent gate unlock</td><td>Gold drain; mad monster death risk</td></tr>
+        <tr><td>Bump money monster (no gold)</td><td>Force payment progress</td><td>Increments toward mad state → death</td></tr>
+        <tr><td>Fight snake without sword</td><td>Save a sword</td><td>Costs 1 health; fatal if at 1 HP</td></tr>
+      </table>
+
+      <h3>Sword Economy</h3>
+      <p>
+        Swords are the central resource of the risk system. They're finite per level, earned from trees, and consumed one-per-snake.
+        At 0 swords, every snake encounter chips health. At low health with no swords, any snake is lethal — creating a
+        downward spiral the player must anticipate and prevent.
+      </p>
+    </section>
+
+    <!-- ── REPLAYABILITY ── -->
+    <section id="replayability">
+      <h2><span class="icon">🔁</span> Replayability</h2>
+
+      <h3>What Changes Each Run</h3>
+      <ul style="padding-left:20px; margin-top:10px; font-size:14px; color:var(--text-muted);">
+        <li style="margin-bottom:4px;">All loot positions re-randomized per level (Fisher-Yates shuffled)</li>
+        <li style="margin-bottom:4px;">Snake spawn positions vary</li>
+        <li style="margin-bottom:4px;">Door and key positions vary</li>
+        <li style="margin-bottom:4px;">Rabbit spawn position varies (constrained near hole)</li>
+        <li>Rock loot order randomized (which rocks have hearts vs snakes)</li>
+      </ul>
+
+      <h3>What Stays the Same</h3>
+      <ul style="padding-left:20px; margin-top:10px; font-size:14px; color:var(--text-muted);">
+        <li style="margin-bottom:4px;">Grid size, structure, and tile counts</li>
+        <li style="margin-bottom:4px;">Total loot quantities per level</li>
+        <li style="margin-bottom:4px;">Snake AI pattern (always <code>random×3, chase×1</code>)</li>
+        <li style="margin-bottom:4px;">Final boss mechanic (always last rock)</li>
+        <li>Cave gate prices and layout (fixed)</li>
+      </ul>
+
+      <h3>Persistent Cross-Run Progression</h3>
+      <p>
+        Greedy Grotto gates are <strong>permanently unlocked</strong> once paid — the cave layer is a long-arc progression
+        system that spans many runs. This gives returning players something to work toward even if they haven't beaten the
+        forest yet. The run counter also increments persistently, surfacing history in the death/new-run modal.
+      </p>
+
+      <h3>Replayability Assessment</h3>
+      <div class="tags" style="margin-top:12px;">
+        <span class="tag highlight">Procedural loot placement</span>
+        <span class="tag highlight">Permanent cave progression</span>
+        <span class="tag">Score chasing (gold / moves / time)</span>
+        <span class="tag">Fixed enemy AI (learnable)</span>
+      </div>
+    </section>
+
+    <!-- ── PERMADEATH ── -->
+    <section id="permadeath">
+      <h2><span class="icon">💀</span> Permadeath Type</h2>
+      <p>
+        Ninjack uses <strong>full run permadeath with soft meta-persistence</strong> — the classic roguelike model.
+      </p>
+      <table>
+        <tr><th>Layer</th><th>Behavior</th></tr>
+        <tr><td>Run save</td><td>Cleared on death; no mid-run continues</td></tr>
+        <tr><td>In-run health</td><td>No healing except hearts found in rocks</td></tr>
+        <tr><td>Gold</td><td>Lost on death (not carried to next run)</td></tr>
+        <tr><td>Swords / keys</td><td>Lost on death</td></tr>
+        <tr><td>Cave gate unlocks</td><td><strong>Permanent</strong> — persist across all runs forever</td></tr>
+        <tr><td>Run counter</td><td>Increments permanently on every new run</td></tr>
+      </table>
+
+      <div class="callout">
+        <div class="callout-title">Roguelike Classification</div>
+        Ninjack is a <em>roguelite</em> by modern convention: full permadeath within a run, but meaningful permanent
+        progression across runs (cave gates). It lacks the deck-building or item-draft "run build" common
+        to contemporary roguelites — its meta-progression is purely gold-gated unlocks rather than power unlocks.
+      </div>
+    </section>
+
+    <!-- ── ACCESSIBILITY ── -->
+    <section id="accessibility">
+      <h2><span class="icon">♿</span> Accessibility</h2>
+
+      <h3>Control Options</h3>
+      <p>Six on-screen control layouts accommodate different hand sizes, grip styles, and dominant hands:</p>
+      <div class="tags" style="margin-top:8px;">
+        <span class="tag highlight">D-Pad (default)</span>
+        <span class="tag">Arrow Keys</span>
+        <span class="tag">Split Row</span>
+        <span class="tag">Thumbs</span>
+        <span class="tag">Thumbs Lefty</span>
+        <span class="tag">Virtual Stick</span>
+      </div>
+      <p style="margin-top:12px;">Hardware keyboard (arrow keys) also works, making the game usable without touch entirely.</p>
+
+      <h3>Visual Accessibility</h3>
+      <ul style="padding-left:20px; margin-top:8px; font-size:14px; color:var(--text-muted);">
+        <li style="margin-bottom:4px;">All game elements represented as large emoji — no small sprites or pixel art to squint at</li>
+        <li style="margin-bottom:4px;">Snake directional arrow indicator gives a heads-up before a chase attack</li>
+        <li style="margin-bottom:4px;">Health displayed as large ❤️/🤍 icons, not a number bar</li>
+        <li>High contrast between empty tiles and game elements</li>
+      </ul>
+
+      <h3>Cognitive Accessibility</h3>
+      <ul style="padding-left:20px; margin-top:8px; font-size:14px; color:var(--text-muted);">
+        <li style="margin-bottom:4px;">Turn-based — no time pressure, player can think as long as needed</li>
+        <li style="margin-bottom:4px;">Enemy AI is fixed and learnable (same 4-step pattern every snake)</li>
+        <li style="margin-bottom:4px;">All loot is determined before the level starts — no surprise mid-game RNG</li>
+        <li>Auto-save after every move means no fear of losing progress to interruption</li>
+      </ul>
+
+      <h3>Customization</h3>
+      <p>6 ninja skin tone variants available. Game explicitly surfaces skin picker on main menu.</p>
+
+      <h3>Gaps / Limitations</h3>
+      <ul style="padding-left:20px; margin-top:8px; font-size:14px; color:var(--text-muted);">
+        <li style="margin-bottom:4px;">No screen reader support (emoji grid, no ARIA labels on tiles)</li>
+        <li style="margin-bottom:4px;">No colorblind mode (relies on emoji identity, not color, so mostly fine)</li>
+        <li>No difficulty setting — single fixed difficulty curve</li>
+      </ul>
+    </section>
+
+    <!-- ── PLATFORM ── -->
+    <section id="platform">
+      <h2><span class="icon">📱</span> Platform &amp; Distribution</h2>
+
+      <h3>Runtime Targets</h3>
+      <table>
+        <tr><th>Platform</th><th>Method</th><th>Notes</th></tr>
+        <tr><td>Web browser</td><td>Hosted HTML/JS (Vite build)</td><td>Primary target; served at <code>/web-ninjack/</code></td></tr>
+        <tr><td>iOS</td><td>Capacitor native wrapper</td><td>Synced via <code>npm run sync</code></td></tr>
+        <tr><td>Android</td><td>Capacitor native wrapper</td><td>Synced via <code>npm run sync</code></td></tr>
+      </table>
+
+      <h3>Input Methods Supported</h3>
+      <div class="tags" style="margin-top:8px;">
+        <span class="tag highlight">Touch (on-screen buttons)</span>
+        <span class="tag highlight">Keyboard (arrow keys)</span>
+        <span class="tag">Virtual joystick</span>
+      </div>
+
+      <h3>Technical Stack</h3>
+      <table>
+        <tr><th>Layer</th><th>Technology</th></tr>
+        <tr><td>Language</td><td>TypeScript (ES modules)</td></tr>
+        <tr><td>Bundler</td><td>Vite (content-hash cache busting)</td></tr>
+        <tr><td>Analytics</td><td>Firebase Analytics</td></tr>
+        <tr><td>Persistence</td><td>localStorage (SHA-256 hash validated)</td></tr>
+        <tr><td>Mobile</td><td>Capacitor (iOS + Android)</td></tr>
+        <tr><td>Rendering</td><td>DOM + CSS (no canvas, no game engine)</td></tr>
+      </table>
+
+      <h3>No-Engine Design</h3>
+      <p>
+        The game renders entirely in the DOM using CSS-styled div elements with emoji content. There is no canvas,
+        no WebGL, and no external game framework — just TypeScript, HTML, and CSS. This keeps the bundle small and
+        the rendering accessible to assistive technologies.
+      </p>
+    </section>
+
+    <!-- ── AESTHETIC ── -->
+    <section id="aesthetic">
+      <h2><span class="icon">🖼️</span> Art Style &amp; Aesthetic</h2>
+
+      <h3>Visual Language</h3>
+      <p>
+        Ninjack uses a <strong>pure emoji visual style</strong> — every game element is a Unicode emoji on a dark grid.
+        There are no hand-drawn sprites, no pixel art, and no 3D models. The aesthetic is intentionally minimal and
+        platform-native: it looks at home on any device that renders emoji well.
+      </p>
+
+      <h3>Emoji Palette</h3>
+      <div class="cards">
+        <div class="card"><span class="card-emoji">🥷</span><div class="card-title">Player</div><div class="card-desc">6 skin tone variants</div></div>
+        <div class="card"><span class="card-emoji">🌲</span><div class="card-title">Tree</div><div class="card-desc">Destructible terrain</div></div>
+        <div class="card"><span class="card-emoji">🪨</span><div class="card-title">Rock / Wall</div><div class="card-desc">Solid obstacle</div></div>
+        <div class="card"><span class="card-emoji">🐍</span><div class="card-title">Snake</div><div class="card-desc">Main enemy</div></div>
+        <div class="card"><span class="card-emoji">🔥</span><div class="card-title">Fire</div><div class="card-desc">Impassable wall (cave)</div></div>
+        <div class="card"><span class="card-emoji">🕳️</span><div class="card-title">Hole</div><div class="card-desc">Hazard / Level 10 exit</div></div>
+        <div class="card"><span class="card-emoji">🤑</span><div class="card-title">Money Monster</div><div class="card-desc">Cave boss (→🤢→👹)</div></div>
+        <div class="card"><span class="card-emoji">🐇</span><div class="card-title">Rabbit</div><div class="card-desc">Fleeting gold source</div></div>
+      </div>
+
+      <h3>Motion &amp; Animation</h3>
+      <ul style="padding-left:20px; margin-top:10px; font-size:14px; color:var(--text-muted);">
+        <li style="margin-bottom:4px;"><strong>Speed trail:</strong> 3 ghost ninja images follow the player at 0.50s / 0.37s / 0.24s delays</li>
+        <li style="margin-bottom:4px;"><strong>Rock wobble:</strong> Adjacent rocks shake when a nearby snake auto-reveals</li>
+        <li style="margin-bottom:4px;"><strong>Fire flip:</strong> Animated fire tile with configurable timing (stored in localStorage)</li>
+        <li style="margin-bottom:4px;"><strong>Snake arrow:</strong> Directional indicator pulses on the snake tile during chase phase</li>
+        <li><strong>Cave fade:</strong> Full-screen black overlay fades in/out (0.4s) on cave transitions</li>
+      </ul>
+
+      <h3>Audio Aesthetic</h3>
+      <p>
+        35+ distinct sound effects cover every interaction (footstep, sword hit, coin pickup, enemy death, door unlock, etc.).
+        Two licensed music tracks by <strong>HeatleyBros</strong> establish zone identity — upbeat adventure for the forest,
+        tense ambience for the cave. Music crossfades on zone transitions.
+      </p>
+    </section>
+
+    <!-- ── COMP TITLES ── -->
+    <section id="comps">
+      <h2><span class="icon">🎮</span> Comparable Titles</h2>
+      <p>
+        Ninjack sits at the intersection of several well-known game traditions. No direct clone — it combines elements
+        in a specific way that distinguishes it.
+      </p>
+      <table>
+        <tr><th>Game</th><th>Shared Element</th><th>Key Difference</th></tr>
+        <tr><td><strong>Rogue / NetHack</strong></td><td>Turn-based grid movement, permadeath, hidden loot</td><td>Ninjack is far simpler — no equipment slots, classes, or multi-floor dungeons</td></tr>
+        <tr><td><strong>Pac-Man</strong></td><td>Grid navigation, enemy chase AI, avoidance loop</td><td>Ninjack is turn-based; enemy pattern is predictable rather than reactive</td></tr>
+        <tr><td><strong>Minesweeper</strong></td><td>Hidden tile contents, risk/reward on reveal</td><td>Ninjack has active enemies and progression, not pure deduction</td></tr>
+        <tr><td><strong>Into the Breach</strong></td><td>Turn-based, small grid, telegraphed enemy moves</td><td>No positional puzzle solving; Ninjack is resource management + avoidance</td></tr>
+        <tr><td><strong>Shattered Pixel Dungeon</strong></td><td>Roguelite, dungeon levels, loot-from-environment</td><td>Ninjack has no item build, no stats — stripped to pure movement</td></tr>
+        <tr><td><strong>Snake (classic)</strong></td><td>Grid, snake enemies, avoidance</td><td>Player is the hunter here; snakes are manageable, not the mechanical focus</td></tr>
+      </table>
+
+      <div class="callout info">
+        <div class="callout-title">Elevator Pitch Comp</div>
+        "It's Minesweeper meets Snake — on a grid where you control the character instead of the snake, every tile you open could spawn an enemy, and enemies move in a learnable pattern you can exploit."
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // Sidebar active-link highlighting
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('.sidebar a');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.sidebar a[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

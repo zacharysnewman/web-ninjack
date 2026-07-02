@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-capable" content="yes">
+	<script>
+		(function() {
+			var sp = new URLSearchParams(location.search);
+			if (sp.has('reset')) { localStorage.clear(); location.replace(location.pathname); return; }
+			if (sp.has('gold')) { location.replace('gold.html'); return; }
+			if (sp.has('cave-plan')) { location.replace('cave-plan.html'); return; }
+			if (sp.has('animations')) { location.replace('animations.html'); return; }
+			if (sp.has('spec')) { location.replace('spec.html'); return; }
+			if (sp.has('slitherwood')) { location.replace('slitherwood.html'); return; }
+			if (sp.has('docs')) { location.replace('docs.html' + (sp.get('docs') ? '#' + sp.get('docs') : '')); return; }
+			if (sp.get('controls') === 'true') location.replace('controls.html');
+		})();
+	</script>
+        <title>Ninjack</title>
+  <script type="module" crossorigin src="/web-ninjack/assets/main-dc4oVc0m.js"></script>
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/modulepreload-polyfill-Dezn_h7o.js">
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/audio-r26FRT3_.js">
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/constants-czZI6IJk.js">
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/controls-render-23mpbGsB.js">
+  <link rel="stylesheet" crossorigin href="/web-ninjack/assets/main-BEyx9uih.css">
+</head>
+<body class="noselect" role="application">
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <defs>
+    <filter id="hit-flash-white" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="
+        0 0 0 1 0
+        0 0 0 1 0
+        0 0 0 1 0
+        0 0 0 1 0"/>
+    </filter>
+  </defs>
+</svg>
+	<div class="outlined game-title" id="game-title">Ninjack</div>
+	<div class="game">
+		<div id="health-bar" class="outlined health-bar-display"></div>
+		<div class="menu-bar">
+			<div class="outlined menu-section inventory" id="inventory"></div>
+		</div>
+		<div id="world"></div>
+	</div>
+	<div id="notification-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+	<div id="controls"></div>
+	<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics-compat.js"></script>
+</body>
+</html>

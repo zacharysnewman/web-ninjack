@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Controls Preview – Ninjack</title>
+    <style>
+        /* Page chrome only — all layout/button styles come from styles.css */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #0a280a;
+            color: #eee;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            padding-bottom: 48px;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        header {
+            background: rgba(0,0,0,0.45);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        header a { color: #88cc88; text-decoration: none; font-size: 0.9rem; }
+        header h1 { color: #FFD700; font-size: 1.2rem; font-weight: bold; letter-spacing: 0.03em; }
+        .subtitle { color: rgba(255,255,255,0.35); font-size: 0.75rem; margin-left: auto; }
+        .cards {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px 16px;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+        .card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 18px;
+            padding: 22px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+        .card-title { font-size: 1.05rem; font-weight: bold; color: #FFD700; letter-spacing: 0.04em; }
+        .card-desc { font-size: 0.78rem; color: #88cc88; text-align: center; line-height: 1.5; }
+        .indicator {
+            font-size: 2rem;
+            width: 54px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.35);
+            border-radius: 10px;
+            color: #FFD700;
+            transition: transform 0.08s ease, background 0.08s ease;
+        }
+        .indicator.flash { transform: scale(1.25); background: rgba(60,140,60,0.4); }
+        /* Joystick direction markers (preview-only decoration) */
+        .jmark {
+            position: absolute;
+            font-size: 13px;
+            color: rgba(255,255,255,0.18);
+            pointer-events: none;
+            line-height: 1;
+        }
+        .jmark-n { top: 10px;    left: 50%; transform: translateX(-50%); }
+        .jmark-s { bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .jmark-w { left: 10px;   top: 50%;  transform: translateY(-50%); }
+        .jmark-e { right: 10px;  top: 50%;  transform: translateY(-50%); }
+    </style>
+  <script type="module" crossorigin src="/web-ninjack/assets/controls-BSjzeLkc.js"></script>
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/modulepreload-polyfill-Dezn_h7o.js">
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/controls-render-23mpbGsB.js">
+</head>
+<body>
+    <header>
+        <a href="index.html">← Back</a>
+        <h1>Controls Preview</h1>
+        <span class="subtitle">tap to test</span>
+    </header>
+
+    <div class="cards">
+        <div class="card">
+            <div class="card-title">D-Pad</div>
+            <div class="card-desc">3×3 grid, empty corners, hub in center.<br>Classic game controller layout — spatial mapping is immediately obvious.</div>
+            <div class="indicator" id="ind-cross">–</div>
+            <div id="pad-cross"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Arrow Keys</div>
+            <div class="card-desc">Mirrors the keyboard arrow key layout.<br>Up floats above, flanked by Left/Down/Right on the bottom row.</div>
+            <div class="indicator" id="ind-invt">–</div>
+            <div id="pad-invt"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Split Row</div>
+            <div class="card-desc">Left thumb: Left/Down. Right thumb: Up/Right.<br>Wide gap separates the two sides into distinct thumb zones.</div>
+            <div class="indicator" id="ind-linear">–</div>
+            <div id="pad-linear"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Thumbs</div>
+            <div class="card-desc">Left thumb: Up/Down (vertical). Right thumb: Left/Right (horizontal).<br>Each axis mapped to the thumb that controls it naturally.</div>
+            <div class="indicator" id="ind-split">–</div>
+            <div id="pad-split"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Thumbs Lefty</div>
+            <div class="card-desc">Mirrored for left-handed players. Left thumb: Left/Right. Right thumb: Up/Down.</div>
+            <div class="indicator" id="ind-split-lefty">–</div>
+            <div id="pad-split-lefty"></div>
+        </div>
+
+    </div>
+
+</body>
+</html>
