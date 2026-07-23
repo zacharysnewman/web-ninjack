@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="theme-color" content="forestgreen" id="theme-color-meta">
+	<script>
+		(function() {
+			var sp = new URLSearchParams(location.search);
+			if (sp.has('reset')) { localStorage.clear(); location.replace(location.pathname); return; }
+			if (sp.has('gold')) { location.replace('gold.html'); return; }
+			if (sp.has('house-plan')) { location.replace('house-plan.html'); return; }
+			if (sp.has('animations')) { location.replace('animations.html'); return; }
+			if (sp.has('spec')) { location.replace('docs.html#game-spec'); return; }
+			if (sp.get('soundboard') === 'true') { location.replace('docs.html#soundboard'); return; }
+			if (sp.has('slitherwood')) { location.replace('slitherwood.html'); return; }
+			if (sp.has('docs')) { location.replace('docs.html' + (sp.get('docs') ? '#' + sp.get('docs') : '')); return; }
+		})();
+	</script>
+        <title>Ninjack</title>
+  <script type="module" crossorigin src="/web-ninjack/assets/main-B1UD2HHU.js"></script>
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/modulepreload-polyfill-Dezn_h7o.js">
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/tile-Df9jxjOA.js">
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/worldGen-CBxCWdHp.js">
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/ink-full-BYrTmwjX.js">
+  <link rel="modulepreload" crossorigin href="/web-ninjack/assets/rooms-data-DxBs9mfV.js">
+  <link rel="stylesheet" crossorigin href="/web-ninjack/assets/rooms-data-DL6N4PZ7.css">
+</head>
+<body class="noselect" role="application">
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <defs>
+    <filter id="hit-flash-white" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="
+        0 0 0 1 0
+        0 0 0 1 0
+        0 0 0 1 0
+        0 0 0 1 0"/>
+    </filter>
+  </defs>
+</svg>
+	<div class="game">
+		<div id="player-status-bars">
+			<div id="health-bar" class="outlined health-bar-display"></div>
+			<div id="fullness-bar" class="outlined health-bar-display"></div>
+		</div>
+		<div class="menu-bar">
+			<div class="outlined menu-section inventory" id="inventory"></div>
+		</div>
+		<div id="world"></div>
+	</div>
+	<div id="notification-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></div>
+	<div id="hud-corner">
+		<button id="use-button" aria-label="Use" style="display: none;">🫳</button>
+		<button id="bow-button" aria-label="Fire Bow" style="display: none;">🏹</button>
+		<button id="inventory-button" aria-label="Inventory">🎒</button>
+	</div>
+	<div id="controls"></div>
+	<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics-compat.js"></script>
+</body>
+</html>
